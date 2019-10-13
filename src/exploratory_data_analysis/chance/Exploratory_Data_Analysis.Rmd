@@ -1,0 +1,47 @@
+---
+title: "Exploratory Data Analysis"
+author: "Chance Robinson"
+date: "10/12/2019"
+output: 
+  github_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exploratory Data Analysis
+
+### Library Imports
+
+
+```{r library-imports, quietely=TRUE, warn.conflicts=FALSE}
+
+library(tidyverse)
+
+```
+
+
+### Load the csv data
+
+```{r load-data}
+
+beers <- read.csv("../../../data/Beers.csv")
+breweries <- read.csv("../../../data/Breweries.csv")
+
+```
+
+## Test Analyis
+
+You can also embed plots, for example:
+
+```{r eda}
+
+head(beers)
+
+head(breweries)
+
+```
+
+
