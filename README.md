@@ -1,6 +1,6 @@
 # BeerAnalysis
 
-Created by [Chance Robinson](https://github.com/RobinsonCW)
+Created by [Chance Robinson](https://github.com/RobinsonCW) and [Thomas Karba]
 
 ## Purpose
 
@@ -24,11 +24,9 @@ The [Codebook](https://github.com/RobinsonCW/BeerAnalysis) provides additional d
 
 ## Repo Structure
     .
-    ├── config                              # Primary analysis files
     ├── data                                # Raw data for analysis questions
-    ├── analysis                            # Primary analysis files
     ├── munge                               # Helper functions for src code
-    ├── src                                 # Helper functions for src code
+    ├── src                                 # Primary analysis files
     |    ├── exploratory_data_analysis      # Rmarkdown files for EDA
     |    ├── objectives                     # Rmarkdown files for primary analysis questions
     ├── CodeBook.md                         # Session information regarding the environment
