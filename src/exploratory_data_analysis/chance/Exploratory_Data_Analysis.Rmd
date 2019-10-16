@@ -155,7 +155,6 @@ df_na_ibu <- df_merged %>%
 dim(df_na_ibu)[1]
 
 
-
 ```
 
 ## Barplot of median values
@@ -228,5 +227,65 @@ head(df_merged_abv_clean)
   
 head(df_merged_ibu_clean)
 
+
+```
+
+
+## ABV Summaary
+
+### Histogram
+
+6.  Comment on the summary statistics and distribution of the ABV variable.
+
+* The histogram is right-skewed with the majority of the data hovering around the 0.05 range
+
+```{r merged-median-abv-histogram}
+
+df_merged_abv_clean2 <- df_merged %>%
+  filter(!is.na(ABV))
+  # mutate(min = min(ABV, median = median(ABV), mean = mean(ABV), max = max(ABV)))
+
+# summary(df_merged_abv_clean2)
+
+abv_min <- min(df_merged_abv_clean2$ABV)
+abv_max <- max(df_merged_abv_clean2$ABV)
+abv_median <- median(df_merged_abv_clean2$ABV)
+abv_mean <- mean(df_merged_abv_clean2$ABV)
+abv_sd <- sd(df_merged_abv_clean2$ABV)
+
+
+df_merged_abv_clean2 %>%
+  ggplot(aes(as.numeric(ABV))) +
+  geom_histogram() +
+  ggtitle("Histogram of median ABV per State") +
+  labs(x = "Median", y = "Count") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+```
+
+### Summary Statistics
+
+
+```{r merged-median-abv-summary}
+
+abv_min 
+abv_max 
+abv_median 
+abv_mean 
+abv_sd 
+
+```
+
+
+## ABV vs IBU
+
+7.  Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot.  Make your best judgment of a relationship and EXPLAIN your answer.
+
+### Scatterplot
+
+```{r merged-median-abv-ibu-scatterplot}
+
+### TODO
 
 ```

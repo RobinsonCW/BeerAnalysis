@@ -23,6 +23,11 @@ Chance Robinson
       - [Highest Median Values](#highest-median-values)
           - [ABV](#abv-1)
           - [IBU](#ibu-1)
+      - [ABV Summaary](#abv-summaary)
+          - [Histogram](#histogram)
+          - [Summary Statistics](#summary-statistics)
+      - [ABV vs IBU](#abv-vs-ibu)
+          - [Scatterplot](#scatterplot)
 
 # Exploratory Data Analysis
 
@@ -32,14 +37,14 @@ Chance Robinson
 library(tidyverse)
 ```
 
-    ## -- Attaching packages ------------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --
+    ## -- Attaching packages --------------------------------------- tidyverse 1.2.1 --
 
     ## v ggplot2 3.2.0     v purrr   0.3.2
     ## v tibble  2.1.3     v dplyr   0.8.3
     ## v tidyr   0.8.3     v stringr 1.4.0
     ## v readr   1.3.1     v forcats 0.4.0
 
-    ## -- Conflicts ---------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -398,3 +403,87 @@ head(df_merged_ibu_clean)
     ## 4 Georgia             55       7
     ## 5 Delaware            52       1
     ## 6 New Mexico          51       6
+
+## ABV Summaary
+
+### Histogram
+
+6.  Comment on the summary statistics and distribution of the ABV
+    variable.
+
+<!-- end list -->
+
+  - The histogram is right-skewed with the majority of the data hovering
+    around the 0.05 range
+
+<!-- end list -->
+
+``` r
+df_merged_abv_clean2 <- df_merged %>%
+  filter(!is.na(ABV))
+  # mutate(min = min(ABV, median = median(ABV), mean = mean(ABV), max = max(ABV)))
+
+# summary(df_merged_abv_clean2)
+
+abv_min <- min(df_merged_abv_clean2$ABV)
+abv_max <- max(df_merged_abv_clean2$ABV)
+abv_median <- median(df_merged_abv_clean2$ABV)
+abv_mean <- mean(df_merged_abv_clean2$ABV)
+abv_sd <- sd(df_merged_abv_clean2$ABV)
+
+
+df_merged_abv_clean2 %>%
+  ggplot(aes(as.numeric(ABV))) +
+  geom_histogram() +
+  ggtitle("Histogram of median ABV per State") +
+  labs(x = "Median", y = "Count") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](Exploratory_Data_Analysis_files/figure-gfm/merged-median-abv-histogram-1.png)<!-- -->
+
+### Summary Statistics
+
+``` r
+abv_min 
+```
+
+    ## [1] 0.001
+
+``` r
+abv_max 
+```
+
+    ## [1] 0.128
+
+``` r
+abv_median 
+```
+
+    ## [1] 0.056
+
+``` r
+abv_mean 
+```
+
+    ## [1] 0.05977342
+
+``` r
+abv_sd 
+```
+
+    ## [1] 0.01354173
+
+## ABV vs IBU
+
+7.  Is there an apparent relationship between the bitterness of the beer
+    and its alcoholic content? Draw a scatter plot. Make your best
+    judgment of a relationship and EXPLAIN your answer.
+
+### Scatterplot
+
+``` r
+### TODO
+```
