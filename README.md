@@ -1,6 +1,6 @@
 # BeerAnalysis
 
-Created by [Chance Robinson](https://github.com/RobinsonCW) and [Thomas Karba]
+Created by [Chance Robinson](https://github.com/RobinsonCW) and [Thomas Karba](https://github.com/thomaskarba)
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Case study of US craft beers and breweries.
 
 ## Analysis Files
 
-* [Beer Analysis Paper (pdf)](https://github.com/RobinsonCW/BeerAnalysis): A paper covering the analysis. 
+* [Beer Analysis Paper (html)](https://github.com/RobinsonCW/BeerAnalysis): A paper covering the analysis. 
 * [Beer Analysis (Rmd)](https://github.com/RobinsonCW/BeerAnalysis): An R-markdown file with the analysis.
 
 ## Data
@@ -24,10 +24,10 @@ The [Codebook](https://github.com/RobinsonCW/BeerAnalysis) provides additional d
 
 ## Repo Structure
     .
-    ├── data                                # Raw data for analysis questions
+    ├── data                                # Raw data for EDA and analysis questions
     ├── munge                               # Helper functions for src code
     ├── src                                 # Primary analysis files
-    |    ├── exploratory_data_analysis      # Rmarkdown files for EDA
-    |    ├── objectives                     # Rmarkdown files for primary analysis questions
+    |    ├── exploratory_data_analysis      # R-markdown files for EDA
+    |    ├── objectives                     # R-markdown files for primary analysis questions
     ├── CodeBook.md                         # Session information regarding the environment
     ├── LICENSE                             # All code and analysis is licensed under the MIT license.

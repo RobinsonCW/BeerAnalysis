@@ -11,9 +11,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Exploratory Data Analysis
+# Exploratory Data Analysis
 
-### Library Imports
+## Library Imports
 
 
 ```{r library-imports, quietely=TRUE, warn.conflicts=FALSE}
@@ -23,25 +23,210 @@ library(tidyverse)
 ```
 
 
-### Load the csv data
+## Load the csv data
 
 ```{r load-data}
 
-beers <- read.csv("../../../data/Beers.csv")
-breweries <- read.csv("../../../data/Breweries.csv")
+beers <- read.csv("../../../data/Beers.csv", stringsAsFactors=FALSE)
+breweries <- read.csv("../../../data/Breweries.csv", stringsAsFactors=FALSE)
 
 ```
 
-## Test Analyis
+## Default Output
 
-You can also embed plots, for example:
+### Beers
 
-```{r eda}
+
+```{r head-beers}
 
 head(beers)
 
+```
+
+### Breweries
+
+```{r head-breweries}
+
 head(breweries)
+
+# The state column has an extra white space at the end of the string
+breweries <- breweries %>%
+  mutate(State = trimws(State))
+
 
 ```
 
 
+## State Lookup
+
+- Washington D.C. added as an entry
+
+```{r state-lookup}
+
+lookup_df = data.frame(state_abb = state.abb, state_name = state.name, stringsAsFactors=FALSE) #makes a data frame with State name and abbreviation. 
+# lookup_df
+
+# add the District of Columbia as a lookup value
+lookup_df <- rbind(lookup_df, 'DC' = c("DC", "Washington D.C."))
+lookup_df
+
+
+```
+
+
+
+## Brewery Count by State
+
+1.  How many breweries are present in each state?
+
+* Note that all 50 states have counts and that the District of Columbia is also included to make the total of 51
+
+```{r brewery-count}
+
+df_breweries <- merge(breweries, lookup_df, by.x = "State", by.y = "state_abb", all.x = TRUE)
+
+
+df_breweries_count_by_state <- df_breweries %>%
+  count(state_name, sort = TRUE)
+# 
+df_breweries_count_by_state
+
+
+```
+
+
+```{r merge-beer-breweries}
+
+df_merged <- merge(beers, df_breweries, by.x = "Brewery_id", by.y = "Brew_ID")
+
+```
+
+
+
+## Merge beer and breweries
+
+2.  Merge beer data with the breweries data. Print the first 6 observations and the last six observations to check the merged file.  (RMD only, this does not need to be included in the presentation or the deck.)
+
+
+### First 6 observations of merged data sets
+```{r merged-head}
+
+head(df_merged)
+
+```
+
+### Last 6 observations of merged data sets
+
+```{r merged-tail}
+
+tail(df_merged)
+
+
+```
+
+
+## Missing Values
+
+3.   Address the missing values in each column.
+
+* The ABV and IBU columns have missing values
+
+- 62 for ABV
+- 1005 for IBU (this is a very high percentage of the overall rows)
+
+```{r merged-missing-values}
+
+df_has_na_values <- any(is.na(df_merged))
+df_has_na_values
+
+# which columns have missing values
+df_na_columns = which(colSums(is.na(df_merged)) > 0)
+df_na_columns
+
+
+df_na_abv <- df_merged %>%
+  filter(is.na(ABV))
+
+dim(df_na_abv)[1]
+
+df_na_ibu <- df_merged %>%
+  filter(is.na(IBU))
+
+dim(df_na_ibu)[1]
+
+
+
+```
+
+## Barplot of median values
+
+4.   Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
+
+### ABV
+
+```{r merged-median-abv-barplot}
+
+df_merged_abv_clean <- df_merged %>%
+  filter(!is.na(ABV)) %>%
+  group_by(state_name) %>%
+  summarize(ABV.MEDIAN = median(ABV), count = n()) %>%
+  arrange(desc(ABV.MEDIAN))
+  
+# df_merged_abv_clean
+
+df_merged_abv_clean %>%
+  ggplot(aes(x = state_name, y=as.numeric(ABV.MEDIAN))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ggtitle("Bar Plot of median ABV per State") +
+  labs(x = "State", y = "Median") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+```
+
+
+### IBU
+
+```{r merged-median-ibu-barplot}
+
+df_merged_ibu_clean <- df_merged %>%
+  filter(!is.na(IBU)) %>%
+  group_by(state_name) %>%
+  summarize(IBU.MEDIAN = median(IBU), count = n()) %>%
+  arrange(desc(IBU.MEDIAN))
+  
+# df_merged_ibu_clean
+
+
+df_merged_ibu_clean %>%
+  ggplot(aes(x = state_name, y=as.numeric(IBU.MEDIAN))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ggtitle("Bar Plot of median IBU per State") +
+  labs(x = "State", y = "Median") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+
+
+## Highest Median Values
+
+5.  Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
+
+### ABV
+
+
+```{r merged-median-abv-table}
+
+head(df_merged_abv_clean)
+
+```
+
+### IBU
+
+```{r merged-median-ibu-table}
+  
+head(df_merged_ibu_clean)
+
+
+```
