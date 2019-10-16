@@ -41,7 +41,24 @@ breweries <- read.csv("../../../data/Breweries.csv", stringsAsFactors=FALSE)
 
 head(beers)
 
+# summary(beers)
+# str(beers)
+
 ```
+
+#### Data Dictionary
+
+  Column Name      |Type                  |Description
+  -----------------|--------------------- |------------------------------------------------
+  1.  Name         |    Character	        | Beer name
+  2.  Beer_ID      |    Integer 		      | Unique identifier for beer
+  3.  ABV          |    Double 		        | Alcohol by volume
+  4.  IBU          |    Integer 		      | International Bitterness Units
+  5.  Brewery_id   |    Integer 		      | Foreign key for brewery data set
+  6.  Style        |    Character 			  | Beer type
+  7.  Ounces       |    Double 			      | Number of ounces per serving
+
+
 
 ### Breweries
 
@@ -49,12 +66,24 @@ head(beers)
 
 head(breweries)
 
+# summary(breweries)
+# str(breweries)
+
 # The state column has an extra white space at the end of the string
 breweries <- breweries %>%
   mutate(State = trimws(State))
 
 
 ```
+
+#### Data Dictionary
+
+  Column Name      |Type                  |Description
+  -----------------|--------------------- |------------------------------------------------
+  1.  Brew_ID      |    Integer	          | Unique identifier for brewery
+  2.  Name         |    Integer 		      | Brewery name
+  3.  City         |    Character 		    | City of brewery
+  4.  State        |    Character 		    | State of brewery
 
 
 ## State Lookup
@@ -79,7 +108,7 @@ lookup_df
 
 1.  How many breweries are present in each state?
 
-* Note that all 50 states have counts and that the District of Columbia is also included to make the total of 51
+* Note that all 50 states have counts and that the District of Columbia is also included to make a total of 51
 
 ```{r brewery-count}
 
@@ -282,10 +311,18 @@ abv_sd
 
 7.  Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot.  Make your best judgment of a relationship and EXPLAIN your answer.
 
+- There appears to be a linear relationship between a beer's International Bitterness Units (IBU) and the Alcohol by volume (ABV).  The stronger a beer is, the more likely it is to rate higher on the bitterness scale.
+
 ### Scatterplot
 
 ```{r merged-median-abv-ibu-scatterplot}
 
-### TODO
+df_merged %>%
+  remove_missing(na.rm = TRUE) %>%
+  ggplot(aes(x = ABV, y = IBU)) + 
+  ggtitle("Scatterplot of IBV by ABU") +
+  geom_point(alpha = 0.3) + 
+  # scale_x_continuous(breaks = seq(from = 0, to = 45, by = 2)) + 
+  geom_smooth(method = 'lm')
 
 ```
