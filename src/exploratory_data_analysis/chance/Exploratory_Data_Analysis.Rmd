@@ -19,6 +19,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r library-imports, quietely=TRUE, warn.conflicts=FALSE}
 
 library(tidyverse)
+library(knitr)
+library(kableExtra)
 
 ```
 
@@ -40,7 +42,6 @@ breweries <- read.csv("../../../data/Breweries.csv", stringsAsFactors=FALSE)
 ```{r head-beers}
 
 head(beers)
-
 # summary(beers)
 # str(beers)
 
@@ -65,14 +66,8 @@ head(beers)
 ```{r head-breweries}
 
 head(breweries)
-
 # summary(breweries)
 # str(breweries)
-
-# The state column has an extra white space at the end of the string
-breweries <- breweries %>%
-  mutate(State = trimws(State))
-
 
 ```
 
@@ -86,18 +81,49 @@ breweries <- breweries %>%
   4.  State        |    Character 		    | State of brewery
 
 
+## Clone data sets
+
+* Create a pristine copy of the originals so that further refinements of the columns names, values, etc.. can be performed
+
+### Beers
+
+```{r clone-and-transform-beers}
+
+df_beers <- beers
+colnames(df_beers)
+names(df_beers) <- c("beer.name", "beer.id", "beer.abv", "beer.ibu", "beer.brewery.id", "beer.style", "beer.ounces")
+head(df_beers)
+
+```
+
+### Breweries
+
+```{r clone-and-transform-breweries}
+
+df_breweries <- breweries
+colnames(df_breweries)
+names(df_breweries) <- c("brewery.id", "brewery.name", "brewery.city", "brewery.state.abb")
+
+# The state column has an extra white space at the end of the string
+df_breweries <- df_breweries %>%
+  mutate(brewery.state.abb = trimws(brewery.state.abb))
+
+head(df_breweries)
+
+```
+
 ## State Lookup
 
 - Washington D.C. added as an entry
 
 ```{r state-lookup}
-
-lookup_df = data.frame(state_abb = state.abb, state_name = state.name, stringsAsFactors=FALSE) #makes a data frame with State name and abbreviation. 
-# lookup_df
+#makes a data frame with State abbreviation, name  and region
+df_state_lookup = data.frame(state.abb, state.name, state.region, stringsAsFactors=FALSE) 
+# df_state_lookup
 
 # add the District of Columbia as a lookup value
-lookup_df <- rbind(lookup_df, 'DC' = c("DC", "Washington D.C."))
-lookup_df
+df_state_lookup <- rbind(df_state_lookup, 'DC' = c("DC", "Washington D.C.", "South"))
+df_state_lookup
 
 
 ```
@@ -112,13 +138,15 @@ lookup_df
 
 ```{r brewery-count}
 
-df_breweries <- merge(breweries, lookup_df, by.x = "State", by.y = "state_abb", all.x = TRUE)
+df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state.abb", by.y = "state.abb", all.x = TRUE)
 
+# df_breweries_state
 
-df_breweries_count_by_state <- df_breweries %>%
-  count(state_name, sort = TRUE)
-# 
-df_breweries_count_by_state
+df_breweries_count_by_state <- df_breweries_state %>%
+  count(state.name, sort = TRUE, name = "count")
+
+kable(df_breweries_count_by_state) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 ```
@@ -126,7 +154,8 @@ df_breweries_count_by_state
 
 ```{r merge-beer-breweries}
 
-df_merged <- merge(beers, df_breweries, by.x = "Brewery_id", by.y = "Brew_ID")
+df_merged <- merge(df_beers, df_breweries_state, by.x = "beer.brewery.id", by.y = "brewery.id")
+# df_merged
 
 ```
 
@@ -172,19 +201,25 @@ df_has_na_values
 df_na_columns = which(colSums(is.na(df_merged)) > 0)
 df_na_columns
 
-
 df_na_abv <- df_merged %>%
-  filter(is.na(ABV))
+  filter(is.na(beer.abv))
 
-dim(df_na_abv)[1]
+na_abv_count <- dim(df_na_abv)[1]
 
 df_na_ibu <- df_merged %>%
-  filter(is.na(IBU))
+  filter(is.na(beer.ibu))
 
-dim(df_na_ibu)[1]
+na_ibu_count <- dim(df_na_ibu)[1]
 
+total_count <- dim(df_merged)[1]
 
 ```
+
+  Column Name      |Count                 |% Missing
+  -----------------|--------------------- |------------------------------------------------
+  1.  ABV          |    `r na_abv_count`	| `r na_abv_count / total_count * 100`
+  2.  IBU          |    `r na_ibu_count`	| `r na_ibu_count / total_count * 100`
+
 
 ## Barplot of median values
 
@@ -194,21 +229,31 @@ dim(df_na_ibu)[1]
 
 ```{r merged-median-abv-barplot}
 
-df_merged_abv_clean <- df_merged %>%
-  filter(!is.na(ABV)) %>%
-  group_by(state_name) %>%
-  summarize(ABV.MEDIAN = median(ABV), count = n()) %>%
-  arrange(desc(ABV.MEDIAN))
-  
-# df_merged_abv_clean
+# df_merged_abv_clean <- df_merged %>%
+#   filter(!is.na(beer.abv)) %>%
+#   group_by(state.name) %>%
+#   summarize(beers.abv.median = median(beer.abv), count = n()) %>%
+#   arrange(desc(beers.abv.median))
 
-df_merged_abv_clean %>%
-  ggplot(aes(x = state_name, y=as.numeric(ABV.MEDIAN))) +
+# head(df_merged_abv_clean)
+
+# df_merged_abv_clean %>%
+#   ggplot(aes(x = reorder(state.name, -beers.abv.median), y=as.numeric(beers.abv.median))) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   ggtitle("Bar Plot of median ABV per State") +
+#   labs(x = "State", y = "Median") +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+df_merged %>%
+  select(state.name, beer.abv) %>%
+  remove_missing(na.rm = TRUE) %>%
+  group_by(state.name) %>%
+  mutate(beers.abv.median = median(beer.abv)) %>%
+  ggplot(aes(x = reorder(state.name, -beers.abv.median), y=beers.abv.median)) +
   geom_bar(stat = "identity", position = "dodge") +
   ggtitle("Bar Plot of median ABV per State") +
   labs(x = "State", y = "Median") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
 
 ```
 
@@ -217,17 +262,28 @@ df_merged_abv_clean %>%
 
 ```{r merged-median-ibu-barplot}
 
-df_merged_ibu_clean <- df_merged %>%
-  filter(!is.na(IBU)) %>%
-  group_by(state_name) %>%
-  summarize(IBU.MEDIAN = median(IBU), count = n()) %>%
-  arrange(desc(IBU.MEDIAN))
-  
-# df_merged_ibu_clean
+# df_merged_ibu_clean <- df_merged %>%
+#   filter(!is.na(beer.ibu)) %>%
+#   group_by(state.name) %>%
+#   summarize(beers.ibu.median = median(beer.ibu), count = n()) %>%
+#   arrange(desc(beers.ibu.median))
+
+# head(df_merged_ibu_clean)
+
+# df_merged_ibu_clean %>%
+#   ggplot(aes(x = reorder(state.name, -beers.ibu.median), y=as.numeric(beers.ibu.median))) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   ggtitle("Bar Plot of median IBU per State") +
+#   labs(x = "State", y = "Median") +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
-df_merged_ibu_clean %>%
-  ggplot(aes(x = state_name, y=as.numeric(IBU.MEDIAN))) +
+df_merged %>%
+  select(state.name, beer.ibu) %>%
+  remove_missing(na.rm = TRUE) %>%
+  group_by(state.name) %>%
+  mutate(beers.ibu.median = median(beer.ibu)) %>%
+  ggplot(aes(x = reorder(state.name, -beers.ibu.median), y=beers.ibu.median)) +
   geom_bar(stat = "identity", position = "dodge") +
   ggtitle("Bar Plot of median IBU per State") +
   labs(x = "State", y = "Median") +
@@ -239,14 +295,36 @@ df_merged_ibu_clean %>%
 
 ## Highest Median Values
 
-5.  Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
+5a.  Which state has the maximum alcoholic (ABV) beer?   Colorado
+5b.  Which state has the most bitter (IBU) beer?  Oregon
 
 ### ABV
 
 
 ```{r merged-median-abv-table}
 
-head(df_merged_abv_clean)
+### Measures of Center
+df_merged_abv_max <- df_merged %>%
+  filter(!is.na(beer.abv)) %>%
+  group_by(state.name) %>%
+  summarize(beers.abv.max = max(beer.abv), count = n()) %>%
+  arrange(desc(beers.abv.max))
+
+df_merged_abv_median <- df_merged %>%
+  filter(!is.na(beer.abv)) %>%
+  group_by(state.name) %>%
+  summarize(beers.abv.median = median(beer.abv), count = n()) %>%
+  arrange(desc(beers.abv.median))
+
+df_merged_abv_mean <- df_merged %>%
+  filter(!is.na(beer.abv)) %>%
+  group_by(state.name) %>%
+  summarize(beers.abv.mean = mean(beer.abv), count = n()) %>%
+  arrange(desc(beers.abv.mean))
+
+head(df_merged_abv_max)
+head(df_merged_abv_median)
+head(df_merged_abv_mean)
 
 ```
 
@@ -254,8 +332,29 @@ head(df_merged_abv_clean)
 
 ```{r merged-median-ibu-table}
   
-head(df_merged_ibu_clean)
+### Measures of Center
+df_merged_ibu_max <- df_merged %>%
+  filter(!is.na(beer.ibu)) %>%
+  group_by(state.name) %>%
+  summarize(beers.ibu.max = max(beer.ibu), count = n()) %>%
+  arrange(desc(beers.ibu.max))
 
+df_merged_ibu_median <- df_merged %>%
+  filter(!is.na(beer.ibu)) %>%
+  group_by(state.name) %>%
+  summarize(beers.ibu.median = median(beer.ibu), count = n()) %>%
+  arrange(desc(beers.ibu.median))
+
+df_merged_ibu_mean <- df_merged %>%
+  filter(!is.na(beer.ibu)) %>%
+  group_by(state.name) %>%
+  summarize(beers.ibu.mean = mean(beer.ibu), count = n()) %>%
+  arrange(desc(beers.ibu.mean))
+
+
+head(df_merged_ibu_max)
+head(df_merged_ibu_median)
+head(df_merged_ibu_mean)
 
 ```
 
@@ -266,25 +365,26 @@ head(df_merged_ibu_clean)
 
 6.  Comment on the summary statistics and distribution of the ABV variable.
 
-* The histogram is right-skewed with the majority of the data hovering around the 0.05 range
+* The histogram is right-skewed with the majority of the beers falling between 0.05 and 0.067 % alcholol by volume.
 
 ```{r merged-median-abv-histogram}
 
-df_merged_abv_clean2 <- df_merged %>%
-  filter(!is.na(ABV))
-  # mutate(min = min(ABV, median = median(ABV), mean = mean(ABV), max = max(ABV)))
 
-# summary(df_merged_abv_clean2)
+df_merged_abv_cleaned <- df_merged %>%
+  select(state.name, beer.abv) %>%
+  remove_missing(na.rm = TRUE)
 
-abv_min <- min(df_merged_abv_clean2$ABV)
-abv_max <- max(df_merged_abv_clean2$ABV)
-abv_median <- median(df_merged_abv_clean2$ABV)
-abv_mean <- mean(df_merged_abv_clean2$ABV)
-abv_sd <- sd(df_merged_abv_clean2$ABV)
+summary(df_merged_abv_cleaned)
+
+abv_min <- min(df_merged_abv_cleaned$beer.abv)
+abv_max <- max(df_merged_abv_cleaned$beer.abv)
+abv_median <- median(df_merged_abv_cleaned$beer.abv)
+abv_mean <- mean(df_merged_abv_cleaned$beer.abv)
+abv_sd <- sd(df_merged_abv_cleaned$beer.abv)
 
 
-df_merged_abv_clean2 %>%
-  ggplot(aes(as.numeric(ABV))) +
+df_merged_abv_cleaned %>%
+  ggplot(aes(beer.abv)) +
   geom_histogram() +
   ggtitle("Histogram of median ABV per State") +
   labs(x = "Median", y = "Count") +
@@ -294,6 +394,14 @@ df_merged_abv_clean2 %>%
 ```
 
 ### Summary Statistics
+
+  ABV Statistic          |Value                 
+  -----------------------|--------------------- 
+  1.  Minimum            |    `r abv_min`	      
+  2.  Maxiumum           |    `r abv_max`	      
+  3.  Median             |    `r abv_median`	 
+  4.  Mean               |    `r abv_mean`	     
+  5.  Standard Deviation |    `r abv_sd`	     
 
 
 ```{r merged-median-abv-summary}
@@ -318,10 +426,12 @@ abv_sd
 ```{r merged-median-abv-ibu-scatterplot}
 
 df_merged %>%
+  select(beer.abv, beer.ibu) %>%
   remove_missing(na.rm = TRUE) %>%
-  ggplot(aes(x = ABV, y = IBU)) + 
+  ggplot(aes(x = beer.abv, y = beer.ibu)) + 
   ggtitle("Scatterplot of IBV by ABU") +
   geom_point(alpha = 0.3) + 
+  labs(x = "ABV", y = "IBU") +
   # scale_x_continuous(breaks = seq(from = 0, to = 45, by = 2)) + 
   geom_smooth(method = 'lm')
 
