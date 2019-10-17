@@ -37,14 +37,14 @@ Chance Robinson
 library(tidyverse)
 ```
 
-    ## -- Attaching packages --------------------------------------- tidyverse 1.2.1 --
+    ## -- Attaching packages --------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --
 
     ## v ggplot2 3.2.0     v purrr   0.3.2
     ## v tibble  2.1.3     v dplyr   0.8.3
     ## v tidyr   0.8.3     v stringr 1.4.0
     ## v readr   1.3.1     v forcats 0.4.0
 
-    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+    ## -- Conflicts ------------------------------------------------------------------------------------------------------ tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -78,6 +78,23 @@ head(beers)
     ## 5                   American IPA     12
     ## 6                  Oatmeal Stout     12
 
+``` r
+# summary(beers)
+# str(beers)
+```
+
+#### Data Dictionary
+
+| Column Name     | Type      | Description                      |
+| --------------- | --------- | -------------------------------- |
+| 1\. Name        | Character | Beer name                        |
+| 2\. Beer\_ID    | Integer   | Unique identifier for beer       |
+| 3\. ABV         | Double    | Alcohol by volume                |
+| 4\. IBU         | Integer   | International Bitterness Units   |
+| 5\. Brewery\_id | Integer   | Foreign key for brewery data set |
+| 6\. Style       | Character | Beer type                        |
+| 7\. Ounces      | Double    | Number of ounces per serving     |
+
 ### Breweries
 
 ``` r
@@ -93,10 +110,22 @@ head(breweries)
     ## 6       6     COAST Brewing Company    Charleston    SC
 
 ``` r
+# summary(breweries)
+# str(breweries)
+
 # The state column has an extra white space at the end of the string
 breweries <- breweries %>%
   mutate(State = trimws(State))
 ```
+
+#### Data Dictionary
+
+| Column Name  | Type      | Description                   |
+| ------------ | --------- | ----------------------------- |
+| 1\. Brew\_ID | Integer   | Unique identifier for brewery |
+| 2\. Name     | Integer   | Brewery name                  |
+| 3\. City     | Character | City of brewery               |
+| 4\. State    | Character | State of brewery              |
 
 ## State Lookup
 
@@ -174,7 +203,7 @@ lookup_df
 <!-- end list -->
 
   - Note that all 50 states have counts and that the District of
-    Columbia is also included to make the total of
+    Columbia is also included to make a total of
 51
 
 <!-- end list -->
@@ -482,8 +511,23 @@ abv_sd
     and its alcoholic content? Draw a scatter plot. Make your best
     judgment of a relationship and EXPLAIN your answer.
 
+<!-- end list -->
+
+  - There appears to be a linear relationship between a beer’s
+    International Bitterness Units (IBU) and the Alcohol by volume
+    (ABV). The stronger a beer is, the more likely it is to rate higher
+    on the bitterness scale.
+
 ### Scatterplot
 
 ``` r
-### TODO
+df_merged %>%
+  remove_missing(na.rm = TRUE) %>%
+  ggplot(aes(x = ABV, y = IBU)) + 
+  ggtitle("Scatterplot of IBV by ABU") +
+  geom_point(alpha = 0.3) + 
+  # scale_x_continuous(breaks = seq(from = 0, to = 45, by = 2)) + 
+  geom_smooth(method = 'lm')
 ```
+
+![](Exploratory_Data_Analysis_files/figure-gfm/merged-median-abv-ibu-scatterplot-1.png)<!-- -->
