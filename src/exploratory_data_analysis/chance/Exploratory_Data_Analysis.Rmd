@@ -145,8 +145,10 @@ df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state
 df_breweries_count_by_state <- df_breweries_state %>%
   count(state.name, sort = TRUE, name = "count")
 
-kable(df_breweries_count_by_state) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+head(df_breweries_count_by_state)
+
+# kable(df_breweries_count_by_state) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 ```
@@ -295,8 +297,10 @@ df_merged %>%
 
 ## Highest Median Values
 
-5a.  Which state has the maximum alcoholic (ABV) beer?   Colorado
-5b.  Which state has the most bitter (IBU) beer?  Oregon
+5.  Which state has the ...
+
+- maximum alcoholic (ABV) beer?   Colorado
+- most bitter (IBU) beer?  Oregon
 
 ### ABV
 
@@ -309,24 +313,42 @@ df_merged_abv_max <- df_merged %>%
   group_by(state.name) %>%
   summarize(beers.abv.max = max(beer.abv), count = n()) %>%
   arrange(desc(beers.abv.max))
+  #top_n(10)
 
 df_merged_abv_median <- df_merged %>%
   filter(!is.na(beer.abv)) %>%
   group_by(state.name) %>%
   summarize(beers.abv.median = median(beer.abv), count = n()) %>%
   arrange(desc(beers.abv.median))
+  #top_n(10)
 
 df_merged_abv_mean <- df_merged %>%
   filter(!is.na(beer.abv)) %>%
   group_by(state.name) %>%
   summarize(beers.abv.mean = mean(beer.abv), count = n()) %>%
   arrange(desc(beers.abv.mean))
+  # top_n(10)
+
+max_abv <- head(df_merged_abv_max, 1)
+median_abv <- head(df_merged_abv_median, 2)
+mean_abv <- head(df_merged_abv_mean,1)
+
 
 head(df_merged_abv_max)
 head(df_merged_abv_median)
 head(df_merged_abv_mean)
 
+
 ```
+
+  Top ABV Statistics     | State               |Value  
+  -----------------------|---------------------|------
+  1.  Max                |  `r max_abv[1,1]`	 | `r max_abv[1,2]`     
+  2.  Median             |  `r median_abv[1,1]`| `r median_abv[1,2]`     
+  2.  Median             |  `r median_abv[2,1]`| `r median_abv[2,2]` 
+  3.  Mean               |  `r mean_abv[1]`	   | `r mean_abv[2]`
+
+
 
 ### IBU
 
@@ -338,25 +360,39 @@ df_merged_ibu_max <- df_merged %>%
   group_by(state.name) %>%
   summarize(beers.ibu.max = max(beer.ibu), count = n()) %>%
   arrange(desc(beers.ibu.max))
+  #top_n(10)
 
 df_merged_ibu_median <- df_merged %>%
   filter(!is.na(beer.ibu)) %>%
   group_by(state.name) %>%
   summarize(beers.ibu.median = median(beer.ibu), count = n()) %>%
   arrange(desc(beers.ibu.median))
+  #top_n(10)
 
 df_merged_ibu_mean <- df_merged %>%
   filter(!is.na(beer.ibu)) %>%
   group_by(state.name) %>%
   summarize(beers.ibu.mean = mean(beer.ibu), count = n()) %>%
   arrange(desc(beers.ibu.mean))
+  #top_n(10)
 
+max_ibu <- head(df_merged_ibu_max, 1)
+median_ibu <- head(df_merged_ibu_median, 1)
+mean_ibu <- head(df_merged_ibu_mean,1)
 
 head(df_merged_ibu_max)
 head(df_merged_ibu_median)
 head(df_merged_ibu_mean)
 
 ```
+
+  Top IBU Statistics     | State               |Value  
+  -----------------------|---------------------|------
+  1.  Max                |  `r max_ibu[1,1]`	 | `r max_abv[1,2]`     
+  2.  Median             |  `r median_ibu[1,1]`| `r median_ibu[1,2]`     
+  3.  Mean               |  `r mean_ibu[1]`	   | `r mean_ibu[2]`
+
+
 
 
 ## ABV Summaary
@@ -395,7 +431,7 @@ df_merged_abv_cleaned %>%
 
 ### Summary Statistics
 
-  ABV Statistic          |Value                 
+  ABV Summary Statistic  |Value                 
   -----------------------|--------------------- 
   1.  Minimum            |    `r abv_min`	      
   2.  Maxiumum           |    `r abv_max`	      

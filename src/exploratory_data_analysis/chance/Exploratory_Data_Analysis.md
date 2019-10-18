@@ -9,6 +9,9 @@ Chance Robinson
       - [Default Output](#default-output)
           - [Beers](#beers)
           - [Breweries](#breweries)
+      - [Clone data sets](#clone-data-sets)
+          - [Beers](#beers-1)
+          - [Breweries](#breweries-1)
       - [State Lookup](#state-lookup)
       - [Brewery Count by State](#brewery-count-by-state)
       - [Merge beer and breweries](#merge-beer-and-breweries)
@@ -47,6 +50,18 @@ library(tidyverse)
     ## -- Conflicts ------------------------------------------------------------------------------------------------------ tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
+
+``` r
+library(knitr)
+library(kableExtra)
+```
+
+    ## 
+    ## Attaching package: 'kableExtra'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     group_rows
 
 ## Load the csv data
 
@@ -112,10 +127,6 @@ head(breweries)
 ``` r
 # summary(breweries)
 # str(breweries)
-
-# The state column has an extra white space at the end of the string
-breweries <- breweries %>%
-  mutate(State = trimws(State))
 ```
 
 #### Data Dictionary
@@ -127,74 +138,136 @@ breweries <- breweries %>%
 | 3\. City     | Character | City of brewery               |
 | 4\. State    | Character | State of brewery              |
 
+## Clone data sets
+
+  - Create a pristine copy of the originals so that further refinements
+    of the columns names, values, etc.. can be performed
+
+### Beers
+
+``` r
+df_beers <- beers
+colnames(df_beers)
+```
+
+    ## [1] "Name"       "Beer_ID"    "ABV"        "IBU"        "Brewery_id"
+    ## [6] "Style"      "Ounces"
+
+``` r
+names(df_beers) <- c("beer.name", "beer.id", "beer.abv", "beer.ibu", "beer.brewery.id", "beer.style", "beer.ounces")
+head(df_beers)
+```
+
+    ##             beer.name beer.id beer.abv beer.ibu beer.brewery.id
+    ## 1            Pub Beer    1436    0.050       NA             409
+    ## 2         Devil's Cup    2265    0.066       NA             178
+    ## 3 Rise of the Phoenix    2264    0.071       NA             178
+    ## 4            Sinister    2263    0.090       NA             178
+    ## 5       Sex and Candy    2262    0.075       NA             178
+    ## 6        Black Exodus    2261    0.077       NA             178
+    ##                       beer.style beer.ounces
+    ## 1            American Pale Lager          12
+    ## 2        American Pale Ale (APA)          12
+    ## 3                   American IPA          12
+    ## 4 American Double / Imperial IPA          12
+    ## 5                   American IPA          12
+    ## 6                  Oatmeal Stout          12
+
+### Breweries
+
+``` r
+df_breweries <- breweries
+colnames(df_breweries)
+```
+
+    ## [1] "Brew_ID" "Name"    "City"    "State"
+
+``` r
+names(df_breweries) <- c("brewery.id", "brewery.name", "brewery.city", "brewery.state.abb")
+
+# The state column has an extra white space at the end of the string
+df_breweries <- df_breweries %>%
+  mutate(brewery.state.abb = trimws(brewery.state.abb))
+
+head(df_breweries)
+```
+
+    ##   brewery.id              brewery.name  brewery.city brewery.state.abb
+    ## 1          1        NorthGate Brewing    Minneapolis                MN
+    ## 2          2 Against the Grain Brewery    Louisville                KY
+    ## 3          3  Jack's Abby Craft Lagers    Framingham                MA
+    ## 4          4 Mike Hess Brewing Company     San Diego                CA
+    ## 5          5   Fort Point Beer Company San Francisco                CA
+    ## 6          6     COAST Brewing Company    Charleston                SC
+
 ## State Lookup
 
-  - Washington D.C. added as an
-entry
+  - Washington D.C. added as an entry
 
 <!-- end list -->
 
 ``` r
-lookup_df = data.frame(state_abb = state.abb, state_name = state.name, stringsAsFactors=FALSE) #makes a data frame with State name and abbreviation. 
-# lookup_df
+#makes a data frame with State abbreviation, name  and region
+df_state_lookup = data.frame(state.abb, state.name, state.region, stringsAsFactors=FALSE) 
+# df_state_lookup
 
 # add the District of Columbia as a lookup value
-lookup_df <- rbind(lookup_df, 'DC' = c("DC", "Washington D.C."))
-lookup_df
+df_state_lookup <- rbind(df_state_lookup, 'DC' = c("DC", "Washington D.C.", "South"))
+df_state_lookup
 ```
 
-    ##    state_abb      state_name
-    ## 1         AL         Alabama
-    ## 2         AK          Alaska
-    ## 3         AZ         Arizona
-    ## 4         AR        Arkansas
-    ## 5         CA      California
-    ## 6         CO        Colorado
-    ## 7         CT     Connecticut
-    ## 8         DE        Delaware
-    ## 9         FL         Florida
-    ## 10        GA         Georgia
-    ## 11        HI          Hawaii
-    ## 12        ID           Idaho
-    ## 13        IL        Illinois
-    ## 14        IN         Indiana
-    ## 15        IA            Iowa
-    ## 16        KS          Kansas
-    ## 17        KY        Kentucky
-    ## 18        LA       Louisiana
-    ## 19        ME           Maine
-    ## 20        MD        Maryland
-    ## 21        MA   Massachusetts
-    ## 22        MI        Michigan
-    ## 23        MN       Minnesota
-    ## 24        MS     Mississippi
-    ## 25        MO        Missouri
-    ## 26        MT         Montana
-    ## 27        NE        Nebraska
-    ## 28        NV          Nevada
-    ## 29        NH   New Hampshire
-    ## 30        NJ      New Jersey
-    ## 31        NM      New Mexico
-    ## 32        NY        New York
-    ## 33        NC  North Carolina
-    ## 34        ND    North Dakota
-    ## 35        OH            Ohio
-    ## 36        OK        Oklahoma
-    ## 37        OR          Oregon
-    ## 38        PA    Pennsylvania
-    ## 39        RI    Rhode Island
-    ## 40        SC  South Carolina
-    ## 41        SD    South Dakota
-    ## 42        TN       Tennessee
-    ## 43        TX           Texas
-    ## 44        UT            Utah
-    ## 45        VT         Vermont
-    ## 46        VA        Virginia
-    ## 47        WA      Washington
-    ## 48        WV   West Virginia
-    ## 49        WI       Wisconsin
-    ## 50        WY         Wyoming
-    ## 51        DC Washington D.C.
+    ##    state.abb      state.name  state.region
+    ## 1         AL         Alabama         South
+    ## 2         AK          Alaska          West
+    ## 3         AZ         Arizona          West
+    ## 4         AR        Arkansas         South
+    ## 5         CA      California          West
+    ## 6         CO        Colorado          West
+    ## 7         CT     Connecticut     Northeast
+    ## 8         DE        Delaware         South
+    ## 9         FL         Florida         South
+    ## 10        GA         Georgia         South
+    ## 11        HI          Hawaii          West
+    ## 12        ID           Idaho          West
+    ## 13        IL        Illinois North Central
+    ## 14        IN         Indiana North Central
+    ## 15        IA            Iowa North Central
+    ## 16        KS          Kansas North Central
+    ## 17        KY        Kentucky         South
+    ## 18        LA       Louisiana         South
+    ## 19        ME           Maine     Northeast
+    ## 20        MD        Maryland         South
+    ## 21        MA   Massachusetts     Northeast
+    ## 22        MI        Michigan North Central
+    ## 23        MN       Minnesota North Central
+    ## 24        MS     Mississippi         South
+    ## 25        MO        Missouri North Central
+    ## 26        MT         Montana          West
+    ## 27        NE        Nebraska North Central
+    ## 28        NV          Nevada          West
+    ## 29        NH   New Hampshire     Northeast
+    ## 30        NJ      New Jersey     Northeast
+    ## 31        NM      New Mexico          West
+    ## 32        NY        New York     Northeast
+    ## 33        NC  North Carolina         South
+    ## 34        ND    North Dakota North Central
+    ## 35        OH            Ohio North Central
+    ## 36        OK        Oklahoma         South
+    ## 37        OR          Oregon          West
+    ## 38        PA    Pennsylvania     Northeast
+    ## 39        RI    Rhode Island     Northeast
+    ## 40        SC  South Carolina         South
+    ## 41        SD    South Dakota North Central
+    ## 42        TN       Tennessee         South
+    ## 43        TX           Texas         South
+    ## 44        UT            Utah          West
+    ## 45        VT         Vermont     Northeast
+    ## 46        VA        Virginia         South
+    ## 47        WA      Washington          West
+    ## 48        WV   West Virginia         South
+    ## 49        WI       Wisconsin North Central
+    ## 50        WY         Wyoming          West
+    ## 51        DC Washington D.C.         South
 
 ## Brewery Count by State
 
@@ -209,32 +282,34 @@ lookup_df
 <!-- end list -->
 
 ``` r
-df_breweries <- merge(breweries, lookup_df, by.x = "State", by.y = "state_abb", all.x = TRUE)
+df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state.abb", by.y = "state.abb", all.x = TRUE)
 
+# df_breweries_state
 
-df_breweries_count_by_state <- df_breweries %>%
-  count(state_name, sort = TRUE)
-# 
-df_breweries_count_by_state
+df_breweries_count_by_state <- df_breweries_state %>%
+  count(state.name, sort = TRUE, name = "count")
+
+head(df_breweries_count_by_state)
 ```
 
-    ## # A tibble: 51 x 2
-    ##    state_name        n
-    ##    <chr>         <int>
-    ##  1 Colorado         47
-    ##  2 California       39
-    ##  3 Michigan         32
-    ##  4 Oregon           29
-    ##  5 Texas            28
-    ##  6 Pennsylvania     25
-    ##  7 Massachusetts    23
-    ##  8 Washington       23
-    ##  9 Indiana          22
-    ## 10 Wisconsin        20
-    ## # ... with 41 more rows
+    ## # A tibble: 6 x 2
+    ##   state.name   count
+    ##   <chr>        <int>
+    ## 1 Colorado        47
+    ## 2 California      39
+    ## 3 Michigan        32
+    ## 4 Oregon          29
+    ## 5 Texas           28
+    ## 6 Pennsylvania    25
 
 ``` r
-df_merged <- merge(beers, df_breweries, by.x = "Brewery_id", by.y = "Brew_ID")
+# kable(df_breweries_count_by_state) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+``` r
+df_merged <- merge(df_beers, df_breweries_state, by.x = "beer.brewery.id", by.y = "brewery.id")
+# df_merged
 ```
 
 ## Merge beer and breweries
@@ -250,27 +325,27 @@ df_merged <- merge(beers, df_breweries, by.x = "Brewery_id", by.y = "Brew_ID")
 head(df_merged)
 ```
 
-    ##   Brewery_id        Name.x Beer_ID   ABV IBU
-    ## 1          1  Get Together    2692 0.045  50
-    ## 2          1 Maggie's Leap    2691 0.049  26
-    ## 3          1    Wall's End    2690 0.048  19
-    ## 4          1       Pumpion    2689 0.060  38
-    ## 5          1    Stronghold    2688 0.060  25
-    ## 6          1   Parapet ESB    2687 0.056  47
-    ##                                 Style Ounces State             Name.y
-    ## 1                        American IPA     16    MN NorthGate Brewing 
-    ## 2                  Milk / Sweet Stout     16    MN NorthGate Brewing 
-    ## 3                   English Brown Ale     16    MN NorthGate Brewing 
-    ## 4                         Pumpkin Ale     16    MN NorthGate Brewing 
-    ## 5                     American Porter     16    MN NorthGate Brewing 
-    ## 6 Extra Special / Strong Bitter (ESB)     16    MN NorthGate Brewing 
-    ##          City state_name
-    ## 1 Minneapolis  Minnesota
-    ## 2 Minneapolis  Minnesota
-    ## 3 Minneapolis  Minnesota
-    ## 4 Minneapolis  Minnesota
-    ## 5 Minneapolis  Minnesota
-    ## 6 Minneapolis  Minnesota
+    ##   beer.brewery.id     beer.name beer.id beer.abv beer.ibu
+    ## 1               1  Get Together    2692    0.045       50
+    ## 2               1 Maggie's Leap    2691    0.049       26
+    ## 3               1    Wall's End    2690    0.048       19
+    ## 4               1       Pumpion    2689    0.060       38
+    ## 5               1    Stronghold    2688    0.060       25
+    ## 6               1   Parapet ESB    2687    0.056       47
+    ##                            beer.style beer.ounces brewery.state.abb
+    ## 1                        American IPA          16                MN
+    ## 2                  Milk / Sweet Stout          16                MN
+    ## 3                   English Brown Ale          16                MN
+    ## 4                         Pumpkin Ale          16                MN
+    ## 5                     American Porter          16                MN
+    ## 6 Extra Special / Strong Bitter (ESB)          16                MN
+    ##         brewery.name brewery.city state.name  state.region
+    ## 1 NorthGate Brewing   Minneapolis  Minnesota North Central
+    ## 2 NorthGate Brewing   Minneapolis  Minnesota North Central
+    ## 3 NorthGate Brewing   Minneapolis  Minnesota North Central
+    ## 4 NorthGate Brewing   Minneapolis  Minnesota North Central
+    ## 5 NorthGate Brewing   Minneapolis  Minnesota North Central
+    ## 6 NorthGate Brewing   Minneapolis  Minnesota North Central
 
 ### Last 6 observations of merged data sets
 
@@ -278,27 +353,27 @@ head(df_merged)
 tail(df_merged)
 ```
 
-    ##      Brewery_id                    Name.x Beer_ID   ABV IBU
-    ## 2405        556             Pilsner Ukiah      98 0.055  NA
-    ## 2406        557  Heinnieweisse Weissebier      52 0.049  NA
-    ## 2407        557           Snapperhead IPA      51 0.068  NA
-    ## 2408        557         Moo Thunder Stout      50 0.049  NA
-    ## 2409        557         Porkslap Pale Ale      49 0.043  NA
-    ## 2410        558 Urban Wilderness Pale Ale      30 0.049  NA
-    ##                        Style Ounces State                        Name.y
-    ## 2405         German Pilsener     12    CA         Ukiah Brewing Company
-    ## 2406              Hefeweizen     12    NY       Butternuts Beer and Ale
-    ## 2407            American IPA     12    NY       Butternuts Beer and Ale
-    ## 2408      Milk / Sweet Stout     12    NY       Butternuts Beer and Ale
-    ## 2409 American Pale Ale (APA)     12    NY       Butternuts Beer and Ale
-    ## 2410        English Pale Ale     12    AK Sleeping Lady Brewing Company
-    ##               City state_name
-    ## 2405         Ukiah California
-    ## 2406 Garrattsville   New York
-    ## 2407 Garrattsville   New York
-    ## 2408 Garrattsville   New York
-    ## 2409 Garrattsville   New York
-    ## 2410     Anchorage     Alaska
+    ##      beer.brewery.id                 beer.name beer.id beer.abv beer.ibu
+    ## 2405             556             Pilsner Ukiah      98    0.055       NA
+    ## 2406             557  Heinnieweisse Weissebier      52    0.049       NA
+    ## 2407             557           Snapperhead IPA      51    0.068       NA
+    ## 2408             557         Moo Thunder Stout      50    0.049       NA
+    ## 2409             557         Porkslap Pale Ale      49    0.043       NA
+    ## 2410             558 Urban Wilderness Pale Ale      30    0.049       NA
+    ##                   beer.style beer.ounces brewery.state.abb
+    ## 2405         German Pilsener          12                CA
+    ## 2406              Hefeweizen          12                NY
+    ## 2407            American IPA          12                NY
+    ## 2408      Milk / Sweet Stout          12                NY
+    ## 2409 American Pale Ale (APA)          12                NY
+    ## 2410        English Pale Ale          12                AK
+    ##                       brewery.name  brewery.city state.name state.region
+    ## 2405         Ukiah Brewing Company         Ukiah California         West
+    ## 2406       Butternuts Beer and Ale Garrattsville   New York    Northeast
+    ## 2407       Butternuts Beer and Ale Garrattsville   New York    Northeast
+    ## 2408       Butternuts Beer and Ale Garrattsville   New York    Northeast
+    ## 2409       Butternuts Beer and Ale Garrattsville   New York    Northeast
+    ## 2410 Sleeping Lady Brewing Company     Anchorage     Alaska         West
 
 ## Missing Values
 
@@ -327,26 +402,27 @@ df_na_columns = which(colSums(is.na(df_merged)) > 0)
 df_na_columns
 ```
 
-    ## ABV IBU 
-    ##   4   5
+    ## beer.abv beer.ibu 
+    ##        4        5
 
 ``` r
 df_na_abv <- df_merged %>%
-  filter(is.na(ABV))
+  filter(is.na(beer.abv))
 
-dim(df_na_abv)[1]
-```
+na_abv_count <- dim(df_na_abv)[1]
 
-    ## [1] 62
-
-``` r
 df_na_ibu <- df_merged %>%
-  filter(is.na(IBU))
+  filter(is.na(beer.ibu))
 
-dim(df_na_ibu)[1]
+na_ibu_count <- dim(df_na_ibu)[1]
+
+total_count <- dim(df_merged)[1]
 ```
 
-    ## [1] 1005
+| Column Name | Count | % Missing  |
+| ----------- | ----- | ---------- |
+| 1\. ABV     | 62    | 2.5726141  |
+| 2\. IBU     | 1005  | 41.7012448 |
 
 ## Barplot of median values
 
@@ -356,16 +432,27 @@ dim(df_na_ibu)[1]
 ### ABV
 
 ``` r
-df_merged_abv_clean <- df_merged %>%
-  filter(!is.na(ABV)) %>%
-  group_by(state_name) %>%
-  summarize(ABV.MEDIAN = median(ABV), count = n()) %>%
-  arrange(desc(ABV.MEDIAN))
-  
-# df_merged_abv_clean
+# df_merged_abv_clean <- df_merged %>%
+#   filter(!is.na(beer.abv)) %>%
+#   group_by(state.name) %>%
+#   summarize(beers.abv.median = median(beer.abv), count = n()) %>%
+#   arrange(desc(beers.abv.median))
 
-df_merged_abv_clean %>%
-  ggplot(aes(x = state_name, y=as.numeric(ABV.MEDIAN))) +
+# head(df_merged_abv_clean)
+
+# df_merged_abv_clean %>%
+#   ggplot(aes(x = reorder(state.name, -beers.abv.median), y=as.numeric(beers.abv.median))) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   ggtitle("Bar Plot of median ABV per State") +
+#   labs(x = "State", y = "Median") +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+df_merged %>%
+  select(state.name, beer.abv) %>%
+  remove_missing(na.rm = TRUE) %>%
+  group_by(state.name) %>%
+  mutate(beers.abv.median = median(beer.abv)) %>%
+  ggplot(aes(x = reorder(state.name, -beers.abv.median), y=beers.abv.median)) +
   geom_bar(stat = "identity", position = "dodge") +
   ggtitle("Bar Plot of median ABV per State") +
   labs(x = "State", y = "Median") +
@@ -377,17 +464,28 @@ df_merged_abv_clean %>%
 ### IBU
 
 ``` r
-df_merged_ibu_clean <- df_merged %>%
-  filter(!is.na(IBU)) %>%
-  group_by(state_name) %>%
-  summarize(IBU.MEDIAN = median(IBU), count = n()) %>%
-  arrange(desc(IBU.MEDIAN))
-  
-# df_merged_ibu_clean
+# df_merged_ibu_clean <- df_merged %>%
+#   filter(!is.na(beer.ibu)) %>%
+#   group_by(state.name) %>%
+#   summarize(beers.ibu.median = median(beer.ibu), count = n()) %>%
+#   arrange(desc(beers.ibu.median))
+
+# head(df_merged_ibu_clean)
+
+# df_merged_ibu_clean %>%
+#   ggplot(aes(x = reorder(state.name, -beers.ibu.median), y=as.numeric(beers.ibu.median))) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   ggtitle("Bar Plot of median IBU per State") +
+#   labs(x = "State", y = "Median") +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
-df_merged_ibu_clean %>%
-  ggplot(aes(x = state_name, y=as.numeric(IBU.MEDIAN))) +
+df_merged %>%
+  select(state.name, beer.ibu) %>%
+  remove_missing(na.rm = TRUE) %>%
+  group_by(state.name) %>%
+  mutate(beers.ibu.median = median(beer.ibu)) %>%
+  ggplot(aes(x = reorder(state.name, -beers.ibu.median), y=beers.ibu.median)) +
   geom_bar(stat = "identity", position = "dodge") +
   ggtitle("Bar Plot of median IBU per State") +
   labs(x = "State", y = "Median") +
@@ -398,40 +496,166 @@ df_merged_ibu_clean %>%
 
 ## Highest Median Values
 
-5.  Which state has the maximum alcoholic (ABV) beer? Which state has
-    the most bitter (IBU) beer?
+5.  Which state has the …
+
+<!-- end list -->
+
+  - maximum alcoholic (ABV) beer? Colorado
+  - most bitter (IBU) beer? Oregon
 
 ### ABV
 
 ``` r
-head(df_merged_abv_clean)
+### Measures of Center
+df_merged_abv_max <- df_merged %>%
+  filter(!is.na(beer.abv)) %>%
+  group_by(state.name) %>%
+  summarize(beers.abv.max = max(beer.abv), count = n()) %>%
+  arrange(desc(beers.abv.max))
+  #top_n(10)
+
+df_merged_abv_median <- df_merged %>%
+  filter(!is.na(beer.abv)) %>%
+  group_by(state.name) %>%
+  summarize(beers.abv.median = median(beer.abv), count = n()) %>%
+  arrange(desc(beers.abv.median))
+  #top_n(10)
+
+df_merged_abv_mean <- df_merged %>%
+  filter(!is.na(beer.abv)) %>%
+  group_by(state.name) %>%
+  summarize(beers.abv.mean = mean(beer.abv), count = n()) %>%
+  arrange(desc(beers.abv.mean))
+  # top_n(10)
+
+max_abv <- head(df_merged_abv_max, 1)
+median_abv <- head(df_merged_abv_median, 2)
+mean_abv <- head(df_merged_abv_mean,1)
+
+
+head(df_merged_abv_max)
 ```
 
     ## # A tibble: 6 x 3
-    ##   state_name      ABV.MEDIAN count
-    ##   <chr>                <dbl> <int>
-    ## 1 Kentucky            0.0625    20
-    ## 2 Washington D.C.     0.0625     8
-    ## 3 Michigan            0.062    151
-    ## 4 New Mexico          0.062     13
-    ## 5 West Virginia       0.062      2
-    ## 6 Colorado            0.0605   250
+    ##   state.name beers.abv.max count
+    ##   <chr>              <dbl> <int>
+    ## 1 Colorado           0.128   250
+    ## 2 Kentucky           0.125    20
+    ## 3 Indiana            0.12    137
+    ## 4 New York           0.1      73
+    ## 5 California         0.099   182
+    ## 6 Idaho              0.099    30
+
+``` r
+head(df_merged_abv_median)
+```
+
+    ## # A tibble: 6 x 3
+    ##   state.name      beers.abv.median count
+    ##   <chr>                      <dbl> <int>
+    ## 1 Kentucky                  0.0625    20
+    ## 2 Washington D.C.           0.0625     8
+    ## 3 Michigan                  0.062    151
+    ## 4 New Mexico                0.062     13
+    ## 5 West Virginia             0.062      2
+    ## 6 Colorado                  0.0605   250
+
+``` r
+head(df_merged_abv_mean)
+```
+
+    ## # A tibble: 6 x 3
+    ##   state.name      beers.abv.mean count
+    ##   <chr>                    <dbl> <int>
+    ## 1 Nevada                  0.0669    10
+    ## 2 Washington D.C.         0.0656     8
+    ## 3 Kentucky                0.0646    20
+    ## 4 Indiana                 0.0634   137
+    ## 5 Michigan                0.0634   151
+    ## 6 Colorado                0.0634   250
+
+| Top ABV Statistics | State           | Value  |
+| ------------------ | --------------- | ------ |
+| 1\. Max            | Colorado        | 0.128  |
+| 2\. Median         | Kentucky        | 0.0625 |
+| 2\. Median         | Washington D.C. | 0.0625 |
+| 3\. Mean           | Nevada          | 0.0669 |
 
 ### IBU
 
 ``` r
-head(df_merged_ibu_clean)
+### Measures of Center
+df_merged_ibu_max <- df_merged %>%
+  filter(!is.na(beer.ibu)) %>%
+  group_by(state.name) %>%
+  summarize(beers.ibu.max = max(beer.ibu), count = n()) %>%
+  arrange(desc(beers.ibu.max))
+  #top_n(10)
+
+df_merged_ibu_median <- df_merged %>%
+  filter(!is.na(beer.ibu)) %>%
+  group_by(state.name) %>%
+  summarize(beers.ibu.median = median(beer.ibu), count = n()) %>%
+  arrange(desc(beers.ibu.median))
+  #top_n(10)
+
+df_merged_ibu_mean <- df_merged %>%
+  filter(!is.na(beer.ibu)) %>%
+  group_by(state.name) %>%
+  summarize(beers.ibu.mean = mean(beer.ibu), count = n()) %>%
+  arrange(desc(beers.ibu.mean))
+  #top_n(10)
+
+max_ibu <- head(df_merged_ibu_max, 1)
+median_ibu <- head(df_merged_ibu_median, 1)
+mean_ibu <- head(df_merged_ibu_mean,1)
+
+head(df_merged_ibu_max)
 ```
 
     ## # A tibble: 6 x 3
-    ##   state_name    IBU.MEDIAN count
-    ##   <chr>              <dbl> <int>
-    ## 1 Maine               61       7
-    ## 2 West Virginia       57.5     2
-    ## 3 Florida             55      37
-    ## 4 Georgia             55       7
-    ## 5 Delaware            52       1
-    ## 6 New Mexico          51       6
+    ##   state.name    beers.ibu.max count
+    ##   <chr>                 <int> <int>
+    ## 1 Oregon                  138    87
+    ## 2 Virginia                135    35
+    ## 3 Massachusetts           130    51
+    ## 4 Ohio                    126    32
+    ## 5 Minnesota               120    46
+    ## 6 Vermont                 120    17
+
+``` r
+head(df_merged_ibu_median)
+```
+
+    ## # A tibble: 6 x 3
+    ##   state.name    beers.ibu.median count
+    ##   <chr>                    <dbl> <int>
+    ## 1 Maine                     61       7
+    ## 2 West Virginia             57.5     2
+    ## 3 Florida                   55      37
+    ## 4 Georgia                   55       7
+    ## 5 Delaware                  52       1
+    ## 6 New Mexico                51       6
+
+``` r
+head(df_merged_ibu_mean)
+```
+
+    ## # A tibble: 6 x 3
+    ##   state.name      beers.ibu.mean count
+    ##   <chr>                    <dbl> <int>
+    ## 1 West Virginia             57.5     2
+    ## 2 New Mexico                57       6
+    ## 3 Washington D.C.           55.2     4
+    ## 4 Idaho                     55.1    17
+    ## 5 Maine                     52.9     7
+    ## 6 Delaware                  52       1
+
+| Top IBU Statistics | State         | Value |
+| ------------------ | ------------- | ----- |
+| 1\. Max            | Oregon        | 0.128 |
+| 2\. Median         | Maine         | 61    |
+| 3\. Mean           | West Virginia | 57.5  |
 
 ## ABV Summaary
 
@@ -442,27 +666,37 @@ head(df_merged_ibu_clean)
 
 <!-- end list -->
 
-  - The histogram is right-skewed with the majority of the data hovering
-    around the 0.05 range
+  - The histogram is right-skewed with the majority of the beers falling
+    between 0.05 and 0.067 % alcholol by volume.
 
 <!-- end list -->
 
 ``` r
-df_merged_abv_clean2 <- df_merged %>%
-  filter(!is.na(ABV))
-  # mutate(min = min(ABV, median = median(ABV), mean = mean(ABV), max = max(ABV)))
+df_merged_abv_cleaned <- df_merged %>%
+  select(state.name, beer.abv) %>%
+  remove_missing(na.rm = TRUE)
 
-# summary(df_merged_abv_clean2)
+summary(df_merged_abv_cleaned)
+```
 
-abv_min <- min(df_merged_abv_clean2$ABV)
-abv_max <- max(df_merged_abv_clean2$ABV)
-abv_median <- median(df_merged_abv_clean2$ABV)
-abv_mean <- mean(df_merged_abv_clean2$ABV)
-abv_sd <- sd(df_merged_abv_clean2$ABV)
+    ##   state.name           beer.abv      
+    ##  Length:2348        Min.   :0.00100  
+    ##  Class :character   1st Qu.:0.05000  
+    ##  Mode  :character   Median :0.05600  
+    ##                     Mean   :0.05977  
+    ##                     3rd Qu.:0.06700  
+    ##                     Max.   :0.12800
+
+``` r
+abv_min <- min(df_merged_abv_cleaned$beer.abv)
+abv_max <- max(df_merged_abv_cleaned$beer.abv)
+abv_median <- median(df_merged_abv_cleaned$beer.abv)
+abv_mean <- mean(df_merged_abv_cleaned$beer.abv)
+abv_sd <- sd(df_merged_abv_cleaned$beer.abv)
 
 
-df_merged_abv_clean2 %>%
-  ggplot(aes(as.numeric(ABV))) +
+df_merged_abv_cleaned %>%
+  ggplot(aes(beer.abv)) +
   geom_histogram() +
   ggtitle("Histogram of median ABV per State") +
   labs(x = "Median", y = "Count") +
@@ -474,6 +708,14 @@ df_merged_abv_clean2 %>%
 ![](Exploratory_Data_Analysis_files/figure-gfm/merged-median-abv-histogram-1.png)<!-- -->
 
 ### Summary Statistics
+
+| ABV Summary Statistic  | Value     |
+| ---------------------- | --------- |
+| 1\. Minimum            | 0.001     |
+| 2\. Maxiumum           | 0.128     |
+| 3\. Median             | 0.056     |
+| 4\. Mean               | 0.0597734 |
+| 5\. Standard Deviation | 0.0135417 |
 
 ``` r
 abv_min 
@@ -522,10 +764,12 @@ abv_sd
 
 ``` r
 df_merged %>%
+  select(beer.abv, beer.ibu) %>%
   remove_missing(na.rm = TRUE) %>%
-  ggplot(aes(x = ABV, y = IBU)) + 
+  ggplot(aes(x = beer.abv, y = beer.ibu)) + 
   ggtitle("Scatterplot of IBV by ABU") +
   geom_point(alpha = 0.3) + 
+  labs(x = "ABV", y = "IBU") +
   # scale_x_continuous(breaks = seq(from = 0, to = 45, by = 2)) + 
   geom_smooth(method = 'lm')
 ```
