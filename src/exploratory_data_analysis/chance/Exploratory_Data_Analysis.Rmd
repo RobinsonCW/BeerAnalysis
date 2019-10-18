@@ -465,7 +465,7 @@ df_merged %>%
   select(beer.abv, beer.ibu) %>%
   remove_missing(na.rm = TRUE) %>%
   ggplot(aes(x = beer.abv, y = beer.ibu)) + 
-  ggtitle("Scatterplot of IBV by ABU") +
+  ggtitle("Scatterplot of IBU by ABV") +
   geom_point(alpha = 0.3) + 
   labs(x = "ABV", y = "IBU") +
   # scale_x_continuous(breaks = seq(from = 0, to = 45, by = 2)) + 

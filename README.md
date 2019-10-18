@@ -8,8 +8,12 @@ Case study of US craft beers and breweries.
 
 ## Analysis Files
 
-* [Beer Analysis Paper (html)](https://github.com/RobinsonCW/BeerAnalysis): A paper covering the analysis. 
-* [Beer Analysis (Rmd)](https://github.com/RobinsonCW/BeerAnalysis): An R-markdown file with the analysis.
+* [Beer Analysis Paper (html)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/exploratory_data_analysis/chance/Exploratory_Data_Analysis.md): A paper covering the analysis. 
+* [Beer Analysis (Rmd)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/exploratory_data_analysis/chance/Exploratory_Data_Analysis.Rmd): An R-markdown file with the analysis.
+
+## Presentation
+
+* [Beer Analysis Presentation (Power Point)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/presentation/DS6306_Proj1_Presentation.pptx): A power point presentation covering the questions of interest from our exploratory data analysis.
 
 ## Data
 
@@ -29,5 +33,6 @@ The [Codebook](https://github.com/RobinsonCW/BeerAnalysis) provides additional d
     ├── src                                 # Primary analysis files
     |    ├── exploratory_data_analysis      # R-markdown files for EDA
     |    ├── objectives                     # R-markdown files for primary analysis questions
+    ├── presentation                        # Presentation for EDA questions
     ├── CodeBook.md                         # Session information regarding the environment
     ├── LICENSE                             # All code and analysis is licensed under the MIT license.
