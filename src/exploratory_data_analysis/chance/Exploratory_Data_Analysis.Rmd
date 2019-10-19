@@ -145,10 +145,35 @@ df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state
 df_breweries_count_by_state <- df_breweries_state %>%
   count(state.name, sort = TRUE, name = "count")
 
-head(df_breweries_count_by_state)
-
 # kable(df_breweries_count_by_state) %>%
 #   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+
+df_breweries_state %>%
+  group_by(brewery.state.abb) %>%
+  filter(n() > 15) %>%
+  ggplot(aes(x = brewery.state.abb, color=brewery.state.abb)) + 
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), vjust=-1) +
+  ggtitle("Brewery Count by State (> 25)") +
+  labs(x = "State Abbreviation", y = "Count") +
+  theme(plot.title = element_text(hjust = 0.5)) + lims(y=c(0,50)) +
+  # guides(fill=guide_legend(title=NULL)) 
+  theme(legend.position = "none")
+
+
+df_breweries_state %>%
+  group_by(brewery.state.abb) %>%
+  filter(n() < 5) %>%
+  ggplot(aes(x = brewery.state.abb, color=brewery.state.abb)) + 
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), vjust=-1) +
+  ggtitle("Brewery Count by State (< 5)") +
+  labs(x = "State Abbreviation", y = "Count") +
+  theme(plot.title = element_text(hjust = 0.5)) + lims(y=c(0,5)) +
+  # guides(fill=guide_legend(title=NULL)) 
+  theme(legend.position = "none")
+
 
 
 ```
@@ -388,7 +413,7 @@ head(df_merged_ibu_mean)
 
   Top IBU Statistics     | State               |Value  
   -----------------------|---------------------|------
-  1.  Max                |  `r max_ibu[1,1]`	 | `r max_abv[1,2]`     
+  1.  Max                |  `r max_ibu[1,1]`	 | `r max_ibu[1,2]`     
   2.  Median             |  `r median_ibu[1,1]`| `r median_ibu[1,2]`     
   3.  Mean               |  `r mean_ibu[1]`	   | `r mean_ibu[2]`
 
@@ -470,5 +495,18 @@ df_merged %>%
   labs(x = "ABV", y = "IBU") +
   # scale_x_continuous(breaks = seq(from = 0, to = 45, by = 2)) + 
   geom_smooth(method = 'lm')
+
+
+df_x <- df_merged %>%
+  select(beer.abv, beer.ibu)
+
+r <- cor(as.matrix(df_x), use="complete.obs")
+t <- cor.test(df_x$beer.abv, df_x$beer.ibu, use="complete.obs")
+
+r
+t
+
+# t$estimate
+
 
 ```

@@ -40,14 +40,14 @@ Chance Robinson
 library(tidyverse)
 ```
 
-    ## -- Attaching packages --------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --
+    ## -- Attaching packages ----------------------------------------------------------------------------------------- tidyverse 1.2.1 --
 
     ## v ggplot2 3.2.0     v purrr   0.3.2
     ## v tibble  2.1.3     v dplyr   0.8.3
     ## v tidyr   0.8.3     v stringr 1.4.0
     ## v readr   1.3.1     v forcats 0.4.0
 
-    ## -- Conflicts ------------------------------------------------------------------------------------------------------ tidyverse_conflicts() --
+    ## -- Conflicts -------------------------------------------------------------------------------------------- tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -289,23 +289,43 @@ df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state
 df_breweries_count_by_state <- df_breweries_state %>%
   count(state.name, sort = TRUE, name = "count")
 
-head(df_breweries_count_by_state)
-```
 
-    ## # A tibble: 6 x 2
-    ##   state.name   count
-    ##   <chr>        <int>
-    ## 1 Colorado        47
-    ## 2 California      39
-    ## 3 Michigan        32
-    ## 4 Oregon          29
-    ## 5 Texas           28
-    ## 6 Pennsylvania    25
 
-``` r
 # kable(df_breweries_count_by_state) %>%
 #   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+
+
+df_breweries_state %>%
+  group_by(brewery.state.abb) %>%
+  filter(n() > 15) %>%
+  ggplot(aes(x = brewery.state.abb, color=brewery.state.abb)) + 
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), vjust=-1) +
+  ggtitle("Brewery Count by State (> 25)") +
+  labs(x = "State Abbreviation", y = "Count") +
+  theme(plot.title = element_text(hjust = 0.5)) + lims(y=c(0,50)) +
+  # guides(fill=guide_legend(title=NULL)) 
+  theme(legend.position = "none")
 ```
+
+![](Exploratory_Data_Analysis_files/figure-gfm/brewery-count-1.png)<!-- -->
+
+``` r
+df_breweries_state %>%
+  group_by(brewery.state.abb) %>%
+  filter(n() < 5) %>%
+  ggplot(aes(x = brewery.state.abb, color=brewery.state.abb)) + 
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), vjust=-1) +
+  ggtitle("Brewery Count by State (< 5)") +
+  labs(x = "State Abbreviation", y = "Count") +
+  theme(plot.title = element_text(hjust = 0.5)) + lims(y=c(0,5)) +
+  # guides(fill=guide_legend(title=NULL)) 
+  theme(legend.position = "none")
+```
+
+![](Exploratory_Data_Analysis_files/figure-gfm/brewery-count-2.png)<!-- -->
 
 ``` r
 df_merged <- merge(df_beers, df_breweries_state, by.x = "beer.brewery.id", by.y = "brewery.id")
@@ -653,7 +673,7 @@ head(df_merged_ibu_mean)
 
 | Top IBU Statistics | State         | Value |
 | ------------------ | ------------- | ----- |
-| 1\. Max            | Oregon        | 0.128 |
+| 1\. Max            | Oregon        | 138   |
 | 2\. Median         | Maine         | 61    |
 | 3\. Mean           | West Virginia | 57.5  |
 
@@ -775,3 +795,38 @@ df_merged %>%
 ```
 
 ![](Exploratory_Data_Analysis_files/figure-gfm/merged-median-abv-ibu-scatterplot-1.png)<!-- -->
+
+``` r
+df_x <- df_merged %>%
+  select(beer.abv, beer.ibu)
+
+cor(as.matrix(df_x), use="complete.obs")
+```
+
+    ##           beer.abv  beer.ibu
+    ## beer.abv 1.0000000 0.6706215
+    ## beer.ibu 0.6706215 1.0000000
+
+``` r
+t <- cor.test(df_x$beer.abv, df_x$beer.ibu, use="complete.obs")
+t
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  df_x$beer.abv and df_x$beer.ibu
+    ## t = 33.863, df = 1403, p-value < 2.2e-16
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.6407982 0.6984238
+    ## sample estimates:
+    ##       cor 
+    ## 0.6706215
+
+``` r
+t$estimate
+```
+
+    ##       cor 
+    ## 0.6706215
