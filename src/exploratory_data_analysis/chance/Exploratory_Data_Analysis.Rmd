@@ -447,7 +447,7 @@ abv_sd <- sd(df_merged_abv_cleaned$beer.abv)
 df_merged_abv_cleaned %>%
   ggplot(aes(beer.abv)) +
   geom_histogram() +
-  ggtitle("Histogram of median ABV per State") +
+  ggtitle("Histogram of median ABV") +
   labs(x = "Median", y = "Count") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 

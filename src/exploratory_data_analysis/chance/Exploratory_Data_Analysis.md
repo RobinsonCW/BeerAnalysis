@@ -289,11 +289,8 @@ df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state
 df_breweries_count_by_state <- df_breweries_state %>%
   count(state.name, sort = TRUE, name = "count")
 
-
-
 # kable(df_breweries_count_by_state) %>%
 #   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
-
 
 
 df_breweries_state %>%
@@ -718,7 +715,7 @@ abv_sd <- sd(df_merged_abv_cleaned$beer.abv)
 df_merged_abv_cleaned %>%
   ggplot(aes(beer.abv)) +
   geom_histogram() +
-  ggtitle("Histogram of median ABV per State") +
+  ggtitle("Histogram of median ABV") +
   labs(x = "Median", y = "Count") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
@@ -800,7 +797,10 @@ df_merged %>%
 df_x <- df_merged %>%
   select(beer.abv, beer.ibu)
 
-cor(as.matrix(df_x), use="complete.obs")
+r <- cor(as.matrix(df_x), use="complete.obs")
+t <- cor.test(df_x$beer.abv, df_x$beer.ibu, use="complete.obs")
+
+r
 ```
 
     ##           beer.abv  beer.ibu
@@ -808,7 +808,6 @@ cor(as.matrix(df_x), use="complete.obs")
     ## beer.ibu 0.6706215 1.0000000
 
 ``` r
-t <- cor.test(df_x$beer.abv, df_x$beer.ibu, use="complete.obs")
 t
 ```
 
@@ -825,8 +824,5 @@ t
     ## 0.6706215
 
 ``` r
-t$estimate
+# t$estimate
 ```
-
-    ##       cor 
-    ## 0.6706215
