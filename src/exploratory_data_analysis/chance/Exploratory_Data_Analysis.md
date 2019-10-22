@@ -31,6 +31,11 @@ Chance Robinson
           - [Summary Statistics](#summary-statistics)
       - [ABV vs IBU](#abv-vs-ibu)
           - [Scatterplot](#scatterplot)
+          - [Pearson’s Correlation](#pearsons-correlation)
+          - [Correlation Test](#correlation-test)
+      - [KNN](#knn)
+      - [Headmap of US Craft Beers by
+        State](#headmap-of-us-craft-beers-by-state)
 
 # Exploratory Data Analysis
 
@@ -40,14 +45,14 @@ Chance Robinson
 library(tidyverse)
 ```
 
-    ## -- Attaching packages ----------------------------------------------------------------------------------------- tidyverse 1.2.1 --
+    ## -- Attaching packages ----------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --
 
     ## v ggplot2 3.2.0     v purrr   0.3.2
     ## v tibble  2.1.3     v dplyr   0.8.3
     ## v tidyr   0.8.3     v stringr 1.4.0
     ## v readr   1.3.1     v forcats 0.4.0
 
-    ## -- Conflicts -------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+    ## -- Conflicts -------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -213,61 +218,16 @@ df_state_lookup = data.frame(state.abb, state.name, state.region, stringsAsFacto
 
 # add the District of Columbia as a lookup value
 df_state_lookup <- rbind(df_state_lookup, 'DC' = c("DC", "Washington D.C.", "South"))
-df_state_lookup
+head(df_state_lookup)
 ```
 
-    ##    state.abb      state.name  state.region
-    ## 1         AL         Alabama         South
-    ## 2         AK          Alaska          West
-    ## 3         AZ         Arizona          West
-    ## 4         AR        Arkansas         South
-    ## 5         CA      California          West
-    ## 6         CO        Colorado          West
-    ## 7         CT     Connecticut     Northeast
-    ## 8         DE        Delaware         South
-    ## 9         FL         Florida         South
-    ## 10        GA         Georgia         South
-    ## 11        HI          Hawaii          West
-    ## 12        ID           Idaho          West
-    ## 13        IL        Illinois North Central
-    ## 14        IN         Indiana North Central
-    ## 15        IA            Iowa North Central
-    ## 16        KS          Kansas North Central
-    ## 17        KY        Kentucky         South
-    ## 18        LA       Louisiana         South
-    ## 19        ME           Maine     Northeast
-    ## 20        MD        Maryland         South
-    ## 21        MA   Massachusetts     Northeast
-    ## 22        MI        Michigan North Central
-    ## 23        MN       Minnesota North Central
-    ## 24        MS     Mississippi         South
-    ## 25        MO        Missouri North Central
-    ## 26        MT         Montana          West
-    ## 27        NE        Nebraska North Central
-    ## 28        NV          Nevada          West
-    ## 29        NH   New Hampshire     Northeast
-    ## 30        NJ      New Jersey     Northeast
-    ## 31        NM      New Mexico          West
-    ## 32        NY        New York     Northeast
-    ## 33        NC  North Carolina         South
-    ## 34        ND    North Dakota North Central
-    ## 35        OH            Ohio North Central
-    ## 36        OK        Oklahoma         South
-    ## 37        OR          Oregon          West
-    ## 38        PA    Pennsylvania     Northeast
-    ## 39        RI    Rhode Island     Northeast
-    ## 40        SC  South Carolina         South
-    ## 41        SD    South Dakota North Central
-    ## 42        TN       Tennessee         South
-    ## 43        TX           Texas         South
-    ## 44        UT            Utah          West
-    ## 45        VT         Vermont     Northeast
-    ## 46        VA        Virginia         South
-    ## 47        WA      Washington          West
-    ## 48        WV   West Virginia         South
-    ## 49        WI       Wisconsin North Central
-    ## 50        WY         Wyoming          West
-    ## 51        DC Washington D.C.         South
+    ##   state.abb state.name state.region
+    ## 1        AL    Alabama        South
+    ## 2        AK     Alaska         West
+    ## 3        AZ    Arizona         West
+    ## 4        AR   Arkansas        South
+    ## 5        CA California         West
+    ## 6        CO   Colorado         West
 
 ## Brewery Count by State
 
@@ -283,19 +243,32 @@ df_state_lookup
 
 ``` r
 df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state.abb", by.y = "state.abb", all.x = TRUE)
-
 # df_breweries_state
 
 df_breweries_count_by_state <- df_breweries_state %>%
-  count(state.name, sort = TRUE, name = "count")
+  count(state.name, sort = TRUE)
 
+head(df_breweries_count_by_state)
+```
+
+    ## # A tibble: 6 x 2
+    ##   state.name       n
+    ##   <chr>        <int>
+    ## 1 Colorado        47
+    ## 2 California      39
+    ## 3 Michigan        32
+    ## 4 Oregon          29
+    ## 5 Texas           28
+    ## 6 Pennsylvania    25
+
+``` r
 # kable(df_breweries_count_by_state) %>%
 #   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 df_breweries_state %>%
   group_by(brewery.state.abb) %>%
-  filter(n() > 15) %>%
+  filter(n() > 25) %>%
   ggplot(aes(x = brewery.state.abb, color=brewery.state.abb)) + 
   geom_bar() +
   geom_text(stat='count', aes(label=..count..), vjust=-1) +
@@ -398,7 +371,9 @@ tail(df_merged)
 
 <!-- end list -->
 
-  - The ABV and IBU columns have missing values
+  - The ABV and IBU columns have NA values
+
+  - The Style column as blank values
 
   - 62 for ABV
 
@@ -433,6 +408,17 @@ df_na_ibu <- df_merged %>%
 
 na_ibu_count <- dim(df_na_ibu)[1]
 
+
+allmisscols <- sapply(df_merged, function(x) any(x == '' ))
+
+# allmisscols
+
+df_na_style <- df_merged %>%
+  filter(beer.style=='')
+
+na_style_count <- dim(df_na_style)[1]
+
+
 total_count <- dim(df_merged)[1]
 ```
 
@@ -440,6 +426,7 @@ total_count <- dim(df_merged)[1]
 | ----------- | ----- | ---------- |
 | 1\. ABV     | 62    | 2.5726141  |
 | 2\. IBU     | 1005  | 41.7012448 |
+| 3\. Style   | 5     | 0.2074689  |
 
 ## Barplot of median values
 
@@ -794,12 +781,14 @@ df_merged %>%
 ![](Exploratory_Data_Analysis_files/figure-gfm/merged-median-abv-ibu-scatterplot-1.png)<!-- -->
 
 ``` r
-df_x <- df_merged %>%
+df_abv_ibu_cor <- df_merged %>%
   select(beer.abv, beer.ibu)
+```
 
-r <- cor(as.matrix(df_x), use="complete.obs")
-t <- cor.test(df_x$beer.abv, df_x$beer.ibu, use="complete.obs")
+### Pearson’s Correlation
 
+``` r
+r <- cor(as.matrix(df_abv_ibu_cor), use="complete.obs")
 r
 ```
 
@@ -807,14 +796,17 @@ r
     ## beer.abv 1.0000000 0.6706215
     ## beer.ibu 0.6706215 1.0000000
 
+### Correlation Test
+
 ``` r
+t <- cor.test(df_abv_ibu_cor$beer.abv, df_abv_ibu_cor$beer.ibu, use="complete.obs")
 t
 ```
 
     ## 
     ##  Pearson's product-moment correlation
     ## 
-    ## data:  df_x$beer.abv and df_x$beer.ibu
+    ## data:  df_abv_ibu_cor$beer.abv and df_abv_ibu_cor$beer.ibu
     ## t = 33.863, df = 1403, p-value < 2.2e-16
     ## alternative hypothesis: true correlation is not equal to 0
     ## 95 percent confidence interval:
@@ -825,4 +817,117 @@ t
 
 ``` r
 # t$estimate
+```
+
+## KNN
+
+7.  Budweiser would also like to investigate the difference with respect
+    to IBU and ABV between IPAs (India Pale Ales) and other types of Ale
+    (any beer with “Ale” in its name other than IPA). You decide to use
+    KNN clustering to investigate this relationship. Provide statistical
+    evidence one way or the other. You can of course assume your
+    audience is comfortable with percentages … KNN is very easy to
+    understand.
+
+<!-- end list -->
+
+  - …
+
+## Headmap of US Craft Beers by State
+
+9.  Knock their socks off\! Find one other useful inference from the
+    data that you feel Budweiser may be able to find value in. You must
+    convince them why it is important and back up your conviction with
+    appropriate statistical evidence.
+
+<!-- end list -->
+
+  - More craft beers are made in the West than any other region.
+    Colorado, California and Oregon for example are all in the top 5 as
+    far as having the most craft beers made in-state.
+
+<!-- end list -->
+
+``` r
+# library(ggplot2)
+library(maps)
+```
+
+    ## 
+    ## Attaching package: 'maps'
+
+    ## The following object is masked from 'package:purrr':
+    ## 
+    ##     map
+
+``` r
+# library(dplyr)
+library(mapproj)
+
+
+#count up the occurance of each state. 
+df_beer_count_by_state <- df_merged %>%
+  count(state.name, sort = TRUE)
+
+df_beer_count_by_state
+```
+
+    ## # A tibble: 51 x 2
+    ##    state.name        n
+    ##    <chr>         <int>
+    ##  1 Colorado        265
+    ##  2 California      183
+    ##  3 Michigan        162
+    ##  4 Indiana         139
+    ##  5 Texas           130
+    ##  6 Oregon          125
+    ##  7 Pennsylvania    100
+    ##  8 Illinois         91
+    ##  9 Wisconsin        87
+    ## 10 Massachusetts    82
+    ## # ... with 41 more rows
+
+``` r
+colnames(df_beer_count_by_state)[1] = "State" #change "state.name" to "State"
+colnames(df_beer_count_by_state)[2] = "Count" #change "n" to "Count"
+
+# df_abv_map_data1
+
+df_beer_count_by_state$region <- tolower(df_beer_count_by_state$State)
+df_beer_count_by_state2 <- df_beer_count_by_state[-1]
+states <- map_data("state")
+map.df <- merge(states, df_beer_count_by_state2, by="region", all.x=T)
+map.df <- map.df[order(map.df$order),]
+ggplot(map.df, aes(x=long,y=lat,group=group))+
+  geom_polygon(aes(fill=Count))+
+  geom_path()+ 
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("US Craft Beer Count by State (Heatmap)")+
+coord_map()
+```
+
+![](Exploratory_Data_Analysis_files/figure-gfm/merged-count-beers-by-state-heatmap-1.png)<!-- -->
+
+``` r
+#count up the occurance of each state. 
+df_beer_count_by_region <- df_merged %>%
+  count(state.region, sort = TRUE) %>%
+  ggplot(aes(x = reorder(state.region, -n), y=n)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ggtitle("Bar Plot of US Craft Beers by Region") +
+  labs(x = "State", y = "Median") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+df_beer_count_by_region
+```
+
+![](Exploratory_Data_Analysis_files/figure-gfm/merged-count-beers-by-region-barplot-1.png)<!-- -->
+
+``` r
+# df_merged %>%
+#   count(state.region, sort = TRUE) %>%
+#   ggplot(aes(x = reorder(state.region, -n), y=n)) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   # ggtitle("Brewery Count by Region") +
+#   labs(x = "Region", y = "Count") +
+#   ggtitle("US Craft Beer Count by Region")
 ```
