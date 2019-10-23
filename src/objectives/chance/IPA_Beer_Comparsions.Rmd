@@ -1,0 +1,277 @@
+---
+title: "IPA Beer Comparisons to Other Ale Beers"
+author: "Chance Robinson"
+date: "10/21/2019"
+output: 
+  github_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exploratory Data Analysis
+
+## Library Imports
+
+
+```{r library-imports, quietely=TRUE, warn.conflicts=FALSE}
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+
+```
+
+
+## Load the csv data
+
+```{r load-data}
+
+beers <- read.csv("../../../data/Beers.csv", stringsAsFactors=FALSE)
+breweries <- read.csv("../../../data/Breweries.csv", stringsAsFactors=FALSE)
+
+```
+
+## Default Output
+
+### Beers
+
+
+```{r head-beers}
+
+head(beers)
+# summary(beers)
+# str(beers)
+
+```
+
+
+### Breweries
+
+```{r head-breweries}
+
+head(breweries)
+# summary(breweries)
+# str(breweries)
+
+```
+
+
+## Clone data sets
+
+* Create a pristine copy of the originals so that further refinements of the columns names, values, etc.. can be performed
+
+### Beers
+
+```{r clone-and-transform-beers}
+
+df_beers <- beers
+colnames(df_beers)
+names(df_beers) <- c("beer.name", "beer.id", "beer.abv", "beer.ibu", "beer.brewery.id", "beer.style", "beer.ounces")
+head(df_beers)
+
+```
+
+### Breweries
+
+```{r clone-and-transform-breweries}
+
+df_breweries <- breweries
+colnames(df_breweries)
+names(df_breweries) <- c("brewery.id", "brewery.name", "brewery.city", "brewery.state.abb")
+
+# The state column has an extra white space at the end of the string
+df_breweries <- df_breweries %>%
+  mutate(brewery.state.abb = trimws(brewery.state.abb))
+
+head(df_breweries)
+
+```
+
+## State Lookup
+
+- Washington D.C. added as an entry
+
+```{r state-lookup}
+#makes a data frame with State abbreviation, name  and region
+df_state_lookup = data.frame(state.abb, state.name, state.region, stringsAsFactors=FALSE) 
+# df_state_lookup
+
+# add the District of Columbia as a lookup value
+df_state_lookup <- rbind(df_state_lookup, 'DC' = c("DC", "Washington D.C.", "South"))
+df_state_lookup
+
+
+```
+
+
+
+## Brewery Count by State
+
+1.  How many breweries are present in each state?
+
+* Note that all 50 states have counts and that the District of Columbia is also included to make a total of 51
+
+```{r brewery-count}
+
+df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state.abb", by.y = "state.abb", all.x = TRUE)
+
+head(df_breweries_state)
+
+
+```
+
+
+```{r merge-beer-breweries}
+
+df_merged <- merge(df_beers, df_breweries_state, by.x = "beer.brewery.id", by.y = "brewery.id")
+head(df_merged)
+
+```
+
+```{r add-ipa-nonipa}
+
+df_merged$beer.ipa.vs.ale <- ''
+
+head(df_merged)
+
+```
+
+
+```{r all-styles}
+
+df_merged %>%
+  count(beer.style)
+```
+
+
+```{r no-style}
+
+df_merged %>%
+  filter(beer.style == '')
+
+```
+
+
+```{r ipa-beers}
+
+df_merged %>%
+  filter(beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  count(beer.style)
+
+df_ipa <- df_merged %>%
+  filter(beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  mutate(beer.ipa.vs.ale = 'IPA')
+
+
+head(df_ipa)
+```
+
+
+
+```{r other-ales}
+df_merged %>%
+  filter(!beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  filter(str_detect(beer.style, "Ale")) %>%
+  count(beer.style)
+
+df_ale <- df_merged %>%
+  filter(!beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  filter(str_detect(beer.style, "Ale")) %>%
+  mutate(beer.ipa.vs.ale = 'Ale')
+
+head(df_ale)
+
+```
+
+```{r}
+# df_merged <- as.factor(df_merged$beer.ipa.vs.ale)
+# 
+head(df_merged)
+```
+
+
+
+```{r boundry-words}
+
+df_merged %>%
+  mutate(beer.style.words = as.character(str_split(beer.style, boundary("word")))) %>%
+  select(beer.style.words)
+
+
+# str_split(df_merged$beer.style, boundary("word"))
+
+```
+
+```{r regex}
+
+# Ale
+
+# India Pale Ale
+IPA <- c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")
+
+
+```
+
+
+
+```{r american-pale-ale-abv}
+
+df_merged %>%
+  filter(beer.style %in% c("American Pale Ale (APA)")) %>%
+  filter(!is.na(beer.abv)) %>%
+  summarize(beers.abv.mean = mean(beer.abv), 
+            beers.abv.median = median(beer.abv), 
+            beers.abv.sd = sd(beer.abv), 
+            beers.abv.min = min(beer.abv), 
+            beers.abv.max = max(beer.abv), 
+            count = n()) 
+
+```
+
+
+```{r ipa-ibu}
+
+df_merged %>%
+  filter(beer.style  %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  filter(!is.na(beer.abv)) %>%
+  summarize(beers.abv.mean = mean(beer.abv), 
+            beers.abv.median = median(beer.abv), 
+            beers.abv.sd = sd(beer.abv), 
+            beers.abv.min = min(beer.abv), 
+            beers.abv.max = max(beer.abv), 
+            count = n()) 
+
+```
+
+
+
+
+```{r american-pale-ale-ibu}
+
+df_merged %>%
+  filter(beer.style %in% c("American Pale Ale (APA)")) %>%
+  filter(!is.na(beer.ibu)) %>%
+  summarize(beers.ibu.mean = mean(beer.ibu), 
+            beers.ibu.median = median(beer.ibu), 
+            beers.ibu.sd = sd(beer.ibu), 
+            beers.ibu.min = min(beer.ibu), 
+            beers.ibu.max = max(beer.ibu), 
+            count = n()) 
+```
+
+
+```{r ipa-ibu}
+
+df_merged %>%
+  filter(beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  filter(!is.na(beer.ibu)) %>%
+  summarize(beers.ibu.mean = mean(beer.ibu), 
+            beers.ibu.median = median(beer.ibu), 
+            beers.ibu.sd = sd(beer.ibu), 
+            beers.ibu.min = min(beer.ibu), 
+            beers.ibu.max = max(beer.ibu), 
+            count = n()) 
+```
