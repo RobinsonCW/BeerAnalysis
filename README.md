@@ -11,9 +11,9 @@ Case study of US craft beers and breweries.
 * [Beer Analysis Paper (html)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/exploratory_data_analysis/chance/Exploratory_Data_Analysis.md): A paper covering the analysis. 
 * [Beer Analysis (Rmd)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/exploratory_data_analysis/chance/Exploratory_Data_Analysis.Rmd): An R-markdown file with the analysis.
 
-## Presentation
+## Presentations
 
-* [Beer Analysis Presentation (Power Point)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/presentation/DS6306_Proj1_Presentation.pptx): A power point presentation covering the questions of interest from our exploratory data analysis.
+* [Beer Analysis EDA Presentation (Power Point)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/presentation/DS6306_Proj1_Pres): A power point presentation covering the questions of interest from our exploratory data analysis.
 
 ## Data
 
