@@ -45,14 +45,14 @@ Chance Robinson
 library(tidyverse)
 ```
 
-    ## -- Attaching packages ----------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --
+    ## -- Attaching packages ------------------------------------------------------ tidyverse 1.2.1 --
 
     ## v ggplot2 3.2.0     v purrr   0.3.2
     ## v tibble  2.1.3     v dplyr   0.8.3
     ## v tidyr   0.8.3     v stringr 1.4.0
     ## v readr   1.3.1     v forcats 0.4.0
 
-    ## -- Conflicts -------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+    ## -- Conflicts --------------------------------------------------------- tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -99,7 +99,27 @@ head(beers)
     ## 6                  Oatmeal Stout     12
 
 ``` r
-# summary(beers)
+summary(beers)
+```
+
+    ##      Name              Beer_ID            ABV               IBU        
+    ##  Length:2410        Min.   :   1.0   Min.   :0.00100   Min.   :  4.00  
+    ##  Class :character   1st Qu.: 808.2   1st Qu.:0.05000   1st Qu.: 21.00  
+    ##  Mode  :character   Median :1453.5   Median :0.05600   Median : 35.00  
+    ##                     Mean   :1431.1   Mean   :0.05977   Mean   : 42.71  
+    ##                     3rd Qu.:2075.8   3rd Qu.:0.06700   3rd Qu.: 64.00  
+    ##                     Max.   :2692.0   Max.   :0.12800   Max.   :138.00  
+    ##                                      NA's   :62        NA's   :1005    
+    ##    Brewery_id       Style               Ounces     
+    ##  Min.   :  1.0   Length:2410        Min.   : 8.40  
+    ##  1st Qu.: 94.0   Class :character   1st Qu.:12.00  
+    ##  Median :206.0   Mode  :character   Median :12.00  
+    ##  Mean   :232.7                      Mean   :13.59  
+    ##  3rd Qu.:367.0                      3rd Qu.:16.00  
+    ##  Max.   :558.0                      Max.   :32.00  
+    ## 
+
+``` r
 # str(beers)
 ```
 
@@ -130,7 +150,18 @@ head(breweries)
     ## 6       6     COAST Brewing Company    Charleston    SC
 
 ``` r
-# summary(breweries)
+summary(breweries)
+```
+
+    ##     Brew_ID          Name               City              State          
+    ##  Min.   :  1.0   Length:558         Length:558         Length:558        
+    ##  1st Qu.:140.2   Class :character   Class :character   Class :character  
+    ##  Median :279.5   Mode  :character   Mode  :character   Mode  :character  
+    ##  Mean   :279.5                                                           
+    ##  3rd Qu.:418.8                                                           
+    ##  Max.   :558.0
+
+``` r
 # str(breweries)
 ```
 
@@ -713,10 +744,10 @@ df_merged_abv_cleaned %>%
 
 ### Summary Statistics
 
-| ABV Summary Statistic  | Value     |
+| ABV Summary Statistics | Value     |
 | ---------------------- | --------- |
 | 1\. Minimum            | 0.001     |
-| 2\. Maxiumum           | 0.128     |
+| 2\. Maximum            | 0.128     |
 | 3\. Median             | 0.056     |
 | 4\. Mean               | 0.0597734 |
 | 5\. Standard Deviation | 0.0135417 |

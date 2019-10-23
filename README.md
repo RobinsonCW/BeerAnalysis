@@ -13,11 +13,11 @@ Case study of US craft beers and breweries.
 
 ## Presentations
 
-* [Beer Analysis EDA Presentation (Power Point)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/presentation/DS6306_Proj1_Pres): A power point presentation covering the questions of interest from our exploratory data analysis.
+* [Beer Analysis EDA Presentation (Power Point)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/presentation/DS6306_Proj1_EDA_Presentation.pptx): A power point presentation covering the questions of interest from our exploratory data analysis.
 
 ## Data
 
-The dataset [readme] provides a reference for the dataset. 
+The dataset [readme](https://github.com/RobinsonCW/BeerAnalysis/blob/master/data/README.md) provides a reference for the source files.
 
 * [`Beers.csv`](https://github.com/RobinsonCW/BeerAnalysis/blob/master/data/Beers.csv): the US craft beers dataset.
 * [`Breweries.csv`](https://github.com/RobinsonCW/BeerAnalysis/blob/master/data/Breweries.csv): the US breweries dataset.

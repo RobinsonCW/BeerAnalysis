@@ -42,7 +42,7 @@ breweries <- read.csv("../../../data/Breweries.csv", stringsAsFactors=FALSE)
 ```{r head-beers}
 
 head(beers)
-# summary(beers)
+summary(beers)
 # str(beers)
 
 
@@ -67,7 +67,7 @@ head(beers)
 ```{r head-breweries}
 
 head(breweries)
-# summary(breweries)
+summary(breweries)
 # str(breweries)
 
 ```
@@ -472,10 +472,10 @@ df_merged_abv_cleaned %>%
 
 ### Summary Statistics
 
-  ABV Summary Statistic  |Value                 
+  ABV Summary Statistics|Value                 
   -----------------------|--------------------- 
   1.  Minimum            |    `r abv_min`	      
-  2.  Maxiumum           |    `r abv_max`	      
+  2.  Maximum            |    `r abv_max`	      
   3.  Median             |    `r abv_median`	 
   4.  Mean               |    `r abv_mean`	     
   5.  Standard Deviation |    `r abv_sd`	     
