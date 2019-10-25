@@ -26,6 +26,9 @@ library(knitr)
 library(kableExtra)
 library(maps)
 library(mapproj)
+library(class)
+library(caret)
+library(e1071)
 
 ```
 
@@ -131,12 +134,13 @@ df_breweries <- df_breweries %>%
 
 ```{r state-lookup}
 #makes a data frame with State abbreviation, name  and region
-df_state_lookup = data.frame(state.abb, state.name, state.region, stringsAsFactors=FALSE) 
+# df_state_lookup = data.frame(state.abb, state.name, state.region, stringsAsFactors=FALSE) 
+df_state_lookup = data.frame(state.abb, state.name, state.region, state.x77, stringsAsFactors=FALSE) 
 # df_state_lookup
 
 # add the District of Columbia as a lookup value
 df_state_lookup <- rbind(df_state_lookup, 'DC' = c("DC", "Washington D.C.", "South"))
-# head(df_state_lookup)
+# head(df_state_lookup[1:5])
 
 
 ```
@@ -151,7 +155,7 @@ Question One:  How many breweries are present in each state?
 
 ```{r brewery-count}
 
-df_breweries_state <- merge(df_breweries, df_state_lookup, by.x = "brewery.state.abb", by.y = "state.abb", all.x = TRUE)
+df_breweries_state <- merge(df_breweries, df_state_lookup[1:5], by.x = "brewery.state.abb", by.y = "state.abb", all.x = TRUE)
 # df_breweries_state
 
 df_breweries_count_by_state <- df_breweries_state %>%
@@ -564,11 +568,259 @@ t
 ```
 
 
-## KNN
+# 8.  KNN
 
-7.  Budweiser would also like to investigate the difference with respect to IBU and ABV between IPAs (India Pale Ales) and other types of Ale (any beer with “Ale” in its name other than IPA).  You decide to use KNN clustering to investigate this relationship.  Provide statistical evidence one way or the other. You can of course assume your audience is comfortable with percentages … KNN is very easy to understand.  
+Question Eight:  Budweiser would also like to investigate the difference with respect to IBU and ABV between IPAs (India Pale Ales) and other types of Ale (any beer with “Ale” in its name other than IPA).  You decide to use KNN clustering to investigate this relationship.  Provide statistical evidence one way or the other. You can of course assume your audience is comfortable with percentages … KNN is very easy to understand.  
 
-- ...
+ 
+
+```{r add-ipa-nonipa}
+
+df_merged$beer.ipa.vs.ale <- ''
+
+df_merged$Population <- as.numeric(df_merged$Population)
+df_merged$Income <- as.numeric(df_merged$Income)
+
+# head(df_merged)
+
+```
+
+
+* Group by Beer Style and get counts for each
+
+```{r all-styles}
+
+df_merged %>%
+  count(beer.style, sort = TRUE) %>%
+  top_n(10)
+
+# kable(df_merged %>%
+#   count(beer.style, sort = TRUE)) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+```
+
+* Five beers have not style available, one of which appears to be an Ale.
+
+```{r no-style}
+
+df_merged %>%
+  filter(beer.style == '')
+
+```
+
+### IPAs
+
+* We were able to clasify 560 beers as being IPAs
+
+- American Double / Imperial IPA
+- American IPA
+- Belgian IPA
+- English India Pale Ale (IPA)
+
+```{r ipa-beers}
+
+df_merged %>%
+  filter(beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  count(beer.style)
+
+df_ipa <- df_merged %>%
+  filter(beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  mutate(beer.ipa.vs.ale = 'IPA')
+
+# head(df_ipa)
+```
+
+### Other Ales
+
+* We were able to clasify 964 beers as being Ales
+
+```{r other-ales}
+
+# Kilt Lifter Scottish-Style Ale (1635)
+df_merged[946,]
+
+df_merged %>%
+  filter(!beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  filter(str_detect(beer.style, "Ale") | beer.id==1635) %>%
+  count(beer.style)
+
+df_ale <- df_merged %>%
+  filter(!beer.style %in% c("American Double / Imperial IPA", "American IPA", "Belgian IPA", "English India Pale Ale (IPA)")) %>%
+  filter(str_detect(beer.style, "Ale") | beer.id==1635) %>%
+  mutate(beer.ipa.vs.ale = 'Ale')
+
+# head(df_ale)
+
+```
+
+### Rowbind the ipa and ale data frames
+
+```{r bind-ipa-ale}
+
+total_beers_count <- dim(df_merged)[1]
+ipa_count <- dim(df_ipa)[1]
+ale_count <- dim(df_ale)[1]
+
+df_combined_ale <- rbind(df_ipa, df_ale)
+
+ipa_ale_count <- dim(df_combined_ale)[1]
+
+
+# head(df_combined_ale)
+
+```
+
+  Column Name      |Count                 |% of Total
+  -----------------|--------------------- |------------------------------------------------
+  1.  IPA          |    `r ipa_count`	    | `r round((ipa_count / total_beers_count * 100),2)`
+  2.  Other Ales   |    `r ale_count`	    | `r round((ale_count / total_beers_count * 100),2)`
+  3.  Ales + IPAs  |    `r ipa_ale_count` | `r round((ipa_ale_count / total_beers_count * 100),2)`
+  
+
+### ABV Boxplot
+
+```{r ipa-vs-other-ale-abv-boxplot}
+
+df_combined_ale %>% 
+  filter(!is.na(beer.abv)) %>%
+  ggplot(aes(x = beer.ipa.vs.ale, y = beer.abv, fill = beer.ipa.vs.ale)) + 
+  geom_boxplot() + 
+  ggtitle("Boxplot of Alcohol by Volume (IPAs vs. Other Ales)") + 
+  xlab("Style") + 
+  ylab("ABV")
+
+```
+
+
+### IBU Boxplot
+
+```{r ipa-vs-other-ale-ibu-boxplot}
+
+df_combined_ale %>% 
+  filter(!is.na(beer.ibu)) %>%
+  ggplot(aes(x = beer.ipa.vs.ale, y = beer.ibu, fill = beer.ipa.vs.ale)) + 
+  geom_boxplot() + 
+  ggtitle("Boxplot of International Bitterness Units (IPAs vs. Other Ales)") + 
+  xlab("Style") + 
+  ylab("IBU")
+
+```
+
+
+## Scatterplot
+
+```{r classify-dataframe}
+df_classify <- df_combined_ale %>% 
+  filter(!is.na(beer.abv) & !is.na(beer.ibu))
+
+df_classify %>%
+  group_by(beer.ipa.vs.ale) %>%
+  summarize(beers.abv.median = median(beer.abv), beers.ibu.median = median(beer.ibu), count = n())
+
+
+df_classify %>% 
+  ggplot(aes(x = beer.abv, y = beer.ibu, color =  beer.ipa.vs.ale)) + 
+  xlab("ABV") + ylab("IBU") + 
+  geom_point()
+
+
+# df = data.frame(beer.abv = .07, beer.ibu = 50 )
+# knn(df_combined_ale_cleaned[,c(4,5)], df, df_combined_ale_cleaned$beer.ipa.vs.ale, k = 5, prob = TRUE)
+
+
+```
+
+
+```{r seed-data}
+
+set.seed(1234)
+split.perc = .70
+
+# summary(df_classify)
+
+
+# standardize values
+df_classify$z.abv = scale(df_classify$beer.abv)
+df_classify$z.ibu = scale(df_classify$beer.ibu)
+
+
+train.indices = sample(1:dim(df_classify)[1],round(split.perc * dim(df_classify)[1]))
+
+train = df_classify[train.indices,]
+test = df_classify[-train.indices,]
+
+dim(df_classify) # 939
+dim(train) # 657
+dim(test) #282
+
+
+
+# original scale
+classifications = knn(train[,c(4,5)],test[,c(4,5)], train$beer.ipa.vs.ale, prob = TRUE, k = 6)
+# confusionMatrix(table(test$beer.ipa.vs.ale,classifications))
+
+# standardized
+classifications = knn(train[,c(16,17)],test[,c(16,17)], train$beer.ipa.vs.ale, prob = TRUE, k = 16)
+confusionMatrix(table(test$beer.ipa.vs.ale,classifications))
+
+
+```
+
+
+### Loop for many k and one training / test partition
+
+```{r loop-many-k}
+acc = data.frame(accuracy = numeric(30), k = numeric(30))
+
+for(i in 1:30)
+{
+  classifications = knn(train[,c(16,17)],test[,c(16,17)], train$beer.ipa.vs.ale, prob = TRUE, k = i)
+  table(test$beer.ipa.vs.ale, classifications)
+  CM = confusionMatrix(table(test$beer.ipa.vs.ale,classifications))
+  acc$accuracy[i] = CM$overall[1]
+  acc$k[i] = i
+}
+
+plot(acc$k,acc$accuracy, type = "l", xlab = "k", ylab="accuracy")
+
+```
+
+## Loop for many k and many training / test partitions
+
+```{r loop-many-k-many-train-test}
+
+iterations = 100
+numks = 30
+
+
+masterAcc = matrix(nrow = iterations, ncol = numks)
+
+for(j in 1:iterations)
+{
+  train.indices = sample(1:dim(df_classify)[1],round(split.perc * dim(df_classify)[1]))
+  train = df_classify[train.indices,]
+  test = df_classify[-train.indices,]
+  for(i in 1:numks)
+  {
+    classifications = knn(train[,c(16,17)],test[,c(16,17)], train$beer.ipa.vs.ale, prob = TRUE, k = i)
+    table(test$beer.ipa.vs.ale, classifications)
+    CM = confusionMatrix(table(test$beer.ipa.vs.ale,classifications))
+    masterAcc[j,i] = CM$overall[1]
+  }
+  
+}
+
+MeanAcc = colMeans(masterAcc)
+
+plot(seq(1,numks,1),MeanAcc, type = "l")
+
+which.max(MeanAcc)
+max(MeanAcc)
+
+
+
+```
 
 
 
