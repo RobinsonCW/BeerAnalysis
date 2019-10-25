@@ -9,6 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+# Introduction
+
+The analysis outlined in this paper seeks to address several questions of interest from the US Craft Beers industry.  There were over 2,410 beers across 558 separate breweries identified in the study.  Although the commissioned study is limited in scope and provides only a small sample of the available attributes, we are confident that it highlights some of the more obvious trends and regional differences in beer tastes.  Two important factors in the flavor of any beer are the percentage of alcohol as well as the bitterness.  We will delve into the specifics of this relationship among beer styles and across different regions of the United States in an attempt to gain better insights into market opportunities.
+
 # Exploratory Data Analysis
 
 ## Library Imports
@@ -41,14 +46,17 @@ breweries <- read.csv("../../data/Breweries.csv", stringsAsFactors=FALSE)
 
 ```{r head-beers}
 
-head(beers)
+# head(beers)
 # summary(beers)
 # str(beers)
+
+kable(head(beers)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 ```
 
-#### Data Dictionary
+### Data Dictionary
 
   Column Name      |Type                  |Description
   -----------------|--------------------- |------------------------------------------------
@@ -66,13 +74,17 @@ head(beers)
 
 ```{r head-breweries}
 
-head(breweries)
+# head(breweries)
 # summary(breweries)
 # str(breweries)
 
+
+kable(head(breweries)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
 ```
 
-#### Data Dictionary
+### Data Dictionary
 
   Column Name      |Type                  |Description
   -----------------|--------------------- |------------------------------------------------
@@ -86,18 +98,18 @@ head(breweries)
 
 * Create a pristine copy of the originals so that further refinements of the columns names, values, etc.. can be performed
 
-### Beers
+### Beers Copy
 
 ```{r clone-and-transform-beers}
 
 df_beers <- beers
 colnames(df_beers)
 names(df_beers) <- c("beer.name", "beer.id", "beer.abv", "beer.ibu", "beer.brewery.id", "beer.style", "beer.ounces")
-head(df_beers)
+# head(df_beers)
 
 ```
 
-### Breweries
+### Breweries Copy
 
 ```{r clone-and-transform-breweries}
 
@@ -109,13 +121,13 @@ names(df_breweries) <- c("brewery.id", "brewery.name", "brewery.city", "brewery.
 df_breweries <- df_breweries %>%
   mutate(brewery.state.abb = trimws(brewery.state.abb))
 
-head(df_breweries)
+# head(df_breweries)
 
 ```
 
 ## State Lookup
 
-- Washington D.C. added as an entry
+* Washington D.C. added as an entry
 
 ```{r state-lookup}
 #makes a data frame with State abbreviation, name  and region
@@ -124,18 +136,18 @@ df_state_lookup = data.frame(state.abb, state.name, state.region, stringsAsFacto
 
 # add the District of Columbia as a lookup value
 df_state_lookup <- rbind(df_state_lookup, 'DC' = c("DC", "Washington D.C.", "South"))
-head(df_state_lookup)
+# head(df_state_lookup)
 
 
 ```
 
 
 
-## Brewery Count by State
+# 1.  Brewery Count by State
 
-1.  How many breweries are present in each state?
+Question One:  How many breweries are present in each state?
 
-* Note that all 50 states have counts and that the District of Columbia is also included to make a total of 51
+* Note that all 50 states have at least one brewery, in addition to the District of Columbia (Washington D.C.).
 
 ```{r brewery-count}
 
@@ -190,37 +202,43 @@ df_merged <- merge(df_beers, df_breweries_state, by.x = "beer.brewery.id", by.y 
 
 
 
-## Merge beer and breweries
+# 2.  Merge beer and breweries
 
-2.  Merge beer data with the breweries data. Print the first 6 observations and the last six observations to check the merged file.  (RMD only, this does not need to be included in the presentation or the deck.)
+Question Two:  Merge beer data with the breweries data. Print the first 6 observations and the last six observations to check the merged file.  (RMD only, this does not need to be included in the presentation or the deck.)
 
 
-### First 6 observations of merged data sets
+## First 6 observations of merged data sets
+
 ```{r merged-head}
 
-head(df_merged)
+# head(df_merged)
+
+kable(head(df_merged)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 ```
 
-### Last 6 observations of merged data sets
+## Last 6 observations of merged data sets
 
 ```{r merged-tail}
 
-tail(df_merged)
+# tail(df_merged)
+
+kable(tail(df_merged)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 ```
 
 
-## Missing Values
+# 3.  Missing Values
 
-3.   Address the missing values in each column.
+Question Three:  Address the missing values in each column
 
-* The ABV and IBU columns have NA values
-* The Style column as blank values
+* The ABV and IBU columns have 64 and 1005 NA values respectively
+* The Style column has blank or empty values for 5 records
 
-- 62 for ABV
-- 1005 for IBU (this is a very high percentage of the overall rows)
+The IBU column in particular, has a relatively high percentage of missing values.  This may complicate our analysis when comparing the data point to other fields that may have many more observations.
 
 ```{r merged-missing-values}
 
@@ -259,16 +277,19 @@ total_count <- dim(df_merged)[1]
 
   Column Name      |Count                 |% Missing
   -----------------|--------------------- |------------------------------------------------
-  1.  ABV          |    `r na_abv_count`	| `r na_abv_count / total_count * 100`
-  2.  IBU          |    `r na_ibu_count`	| `r na_ibu_count / total_count * 100`
-  3.  Style        |    `r na_style_count`| `r na_style_count / total_count * 100`
+  1.  ABV          |    `r na_abv_count`	| `r round((na_abv_count / total_count * 100),2)`
+  2.  IBU          |    `r na_ibu_count`	| `r round((na_ibu_count / total_count * 100),2)`
+  3.  Style        |    `r na_style_count`| `r round((na_style_count / total_count * 100),2)`
 
 
-## Barplot of median values
+# 4.  Barplot of median values
 
-4.   Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
+Question Four:  Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
 
-### ABV
+## Alcohol by Volume
+
+* Kentucky has the highest median ABV of any state in the dataset
+* Utah has the lowest median ABV
 
 ```{r merged-median-abv-barplot}
 
@@ -301,7 +322,11 @@ df_merged %>%
 ```
 
 
-### IBU
+## International Bitterness Units
+
+* Maine has the highest median IBU
+* Wisconsin has the lowest
+
 
 ```{r merged-median-ibu-barplot}
 
@@ -336,14 +361,18 @@ df_merged %>%
 
 
 
-## Highest Median Values
+# 5.  Highest Median Values
 
-5.  Which state has the highest...
+Question Five:  Which state has the ...
 
 - maximum alcoholic (ABV) beer?   Colorado
 - most bitter (IBU) beer?  Oregon
 
-### ABV
+There are different measures of center, etc.. that might be useful in determining state trends.  As you can see from the tables below that depending on the statistic of interest the answer may vary.
+
+
+
+## Alcohol by Volume
 
 
 ```{r merged-median-abv-table}
@@ -391,7 +420,7 @@ head(df_merged_abv_mean)
 
 
 
-### IBU
+## International Bitterness Units
 
 ```{r merged-median-ibu-table}
   
@@ -436,13 +465,14 @@ head(df_merged_ibu_mean)
 
 
 
-## ABV Summaary
+# 6.  Alcohol by Volume Summary
 
-### Histogram
+## ABV Histogram
 
-6.  Comment on the summary statistics and distribution of the ABV variable.
+Question Six:  Comment on the summary statistics and distribution of the ABV variable.
 
-* The histogram is right-skewed with the majority of the beers falling between 0.05 and 0.067 % alcholol by volume.
+* The distribution of the ABV data is slightly right skewed, with most values falling within ~0.014 units of the mean of ~0.06.
+
 
 ```{r merged-median-abv-histogram}
 
@@ -470,35 +500,25 @@ df_merged_abv_cleaned %>%
 
 ```
 
-### Summary Statistics
+## ABV Summary Statistics
 
   ABV Summary Statistics|Value                 
   -----------------------|--------------------- 
   1.  Minimum            |    `r abv_min`	      
   2.  Maximum            |    `r abv_max`	      
   3.  Median             |    `r abv_median`	 
-  4.  Mean               |    `r abv_mean`	     
-  5.  Standard Deviation |    `r abv_sd`	     
+  4.  Mean               |    `r round(abv_mean,4)`	     
+  5.  Standard Deviation |    `r round(abv_sd,4)`	     
 
 
-```{r merged-median-abv-summary}
 
-abv_min 
-abv_max 
-abv_median 
-abv_mean 
-abv_sd 
+# ABV vs IBU
 
-```
+Question Seven:  Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot.  Make your best judgment of a relationship and EXPLAIN your answer.
 
+* There appears to be a linear relationship between a beer's International Bitterness Units (IBU) and the Alcohol by volume (ABV).  The stronger a beer is, the more likely it is to rate higher on the bitterness scale.
 
-## ABV vs IBU
-
-7.  Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot.  Make your best judgment of a relationship and EXPLAIN your answer.
-
-- There appears to be a linear relationship between a beer's International Bitterness Units (IBU) and the Alcohol by volume (ABV).  The stronger a beer is, the more likely it is to rate higher on the bitterness scale.
-
-### Scatterplot
+## Scatterplot
 
 ```{r merged-median-abv-ibu-scatterplot}
 
@@ -519,7 +539,10 @@ df_abv_ibu_cor <- df_merged %>%
 
 ```
 
-### Pearson's Correlation
+## Pearson's Correlation
+
+* Roughly 67% of the variation of a beer's IBU rating can be explained by the ABV for observations which had both attributes to review.
+
 ```{r merged-median-abv-ibu-correlation}
 
 r <- cor(as.matrix(df_abv_ibu_cor), use="complete.obs")
@@ -528,7 +551,10 @@ r
 ```
 
 
-### Correlation Test
+## Correlation Test
+
+* We estimate that this ratio falls within the interval of (0.6408, 0.6984) at the 95% confidence level.
+
 ```{r merged-median-abv-ibu-correlation-test}
 
 t <- cor.test(df_abv_ibu_cor$beer.abv, df_abv_ibu_cor$beer.ibu, use="complete.obs")
@@ -546,13 +572,13 @@ t
 
 
 
-## Headmap of US Craft Beers by State
+# Headmap of US Craft Beers by State
 
 
-9. Knock their socks off!  Find one other useful inference from the data that you feel Budweiser may be able to find value in.  You must convince them why it is important and back up your conviction with appropriate statistical evidence. 
+Question Nine:  Knock their socks off!  Find one other useful inference from the data that you feel Budweiser may be able to find value in.  You must convince them why it is important and back up your conviction with appropriate statistical evidence. 
 
 
-- More craft beers are made in the West than any other region.  Colorado, California and Oregon for example are all in the top 5 as far as having the most craft beers made in-state.
+* More craft beers are made in the West than any other region.  Colorado, California and Oregon for example are all in the top 5 as far as having the most craft beers made in-state.
 
 
 ```{r merged-count-beers-by-state-heatmap}
@@ -562,7 +588,7 @@ t
 df_beer_count_by_state <- df_merged %>%
   count(state.name, sort = TRUE)
 
-df_beer_count_by_state
+head(df_beer_count_by_state)
 
 
 colnames(df_beer_count_by_state)[1] = "State" #change "state.name" to "State"
@@ -606,3 +632,12 @@ df_beer_count_by_region
 
 
 ```
+
+
+# Conclusion
+
+
+
+
+The analysis outlined in this paper seeks to address several questions of interest from the US Craft Beers industry.  There were over 2,410 beers across 558 separate breweries identified in the study.  Although the commissioned study is limited in scope and provides only a small sample of the available attributes, we are confident that it highlights some of the more obvious trends and regional differences in beer tastes.  Two important factors in the flavor of any beer are the percentage of alcohol as well as the bitterness.  We will delve into the specifics of this relationship among beer styles and across different regions of the United States in an attempt to gain better insights into market opportunities.
+
