@@ -8,7 +8,7 @@ Case study of US craft beers and breweries.
 
 ## Analysis Files
 
-* [Beer Analysis Paper (html)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/objectives/Beer_Analysis.html): A paper covering the analysis. 
+* [Beer Analysis Paper (html)](http://htmlpreview.github.io/?https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/objectives/Beer_Analysis.html): A paper covering the analysis. 
 * [Beer Analysis (Rmd)](https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/objectives/Beer_Analysis.Rmd): An R-markdown file with the analysis.
 
 ## Presentations
