@@ -1,6 +1,6 @@
 ---
 title: "Beer Analysis Paper"
-author: "Chance Robinson and Thomas Karba"
+author: "Chance Robinson"
 date: "10/22/2019"
 output: html_document
 ---
@@ -731,6 +731,9 @@ df_classify %>%
 
 ```
 
+# Beer Style Predictions with KNN
+
+* ABV and IBU served as good predictors of a beer’s style when available 
 
 ```{r seed-data}
 
@@ -770,6 +773,8 @@ confusionMatrix(table(test$beer.ipa.vs.ale,classifications))
 
 ### Loop for many k and one training / test partition
 
+* 15-20 seemed to be an ideal range for the value of k given our train/ test splitpposed to just one
+
 ```{r loop-many-k}
 acc = data.frame(accuracy = numeric(30), k = numeric(30))
 
@@ -787,6 +792,9 @@ plot(acc$k,acc$accuracy, type = "l", xlab = "k", ylab="accuracy")
 ```
 
 ## Loop for many k and many training / test partitions
+
+* this could also be seen when running many iterations of a train/ test split as one
+
 
 ```{r loop-many-k-many-train-test}
 
@@ -860,6 +868,9 @@ ggplot(map.df, aes(x=long,y=lat,group=group))+
 coord_map()
 ```
 
+# Barplot of Craft Beers by Region
+
+
 ```{r merged-count-beers-by-region-barplot}
 
 
@@ -869,8 +880,9 @@ df_beer_count_by_region <- df_merged %>%
   ggplot(aes(x = reorder(state.region, -n), y=n)) +
   geom_bar(stat = "identity", position = "dodge") +
   ggtitle("Bar Plot of US Craft Beers by Region") +
-  labs(x = "State", y = "Median") +
+  labs(x = "Region", y = "Count") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 
 df_beer_count_by_region
 
@@ -886,10 +898,72 @@ df_beer_count_by_region
 ```
 
 
+
+# Headmap of Median ABV by State
+
+* Note the outlier state of New Jersey and Delaware
+
+
+```{r merged-median-abv-heatmap}
+
+#count up the occurance of each state. 
+df_merged_abv_median.heatmap <- df_merged_abv_median 
+
+# head(df_merged_abv_median.heatmap)
+
+
+colnames(df_merged_abv_median.heatmap)[1] = "State" #change "state.name" to "State"
+colnames(df_merged_abv_median.heatmap)[2] = "Median" #change "n" to "Count"
+
+# df_abv_map_data1
+
+df_merged_abv_median.heatmap$region <- tolower(df_merged_abv_median.heatmap$State)
+df_merged_abv_median.heatmap2 <- df_merged_abv_median.heatmap[-1]
+states <- map_data("state")
+map.df <- merge(states, df_merged_abv_median.heatmap2, by="region", all.x=T)
+map.df <- map.df[order(map.df$order),]
+ggplot(map.df, aes(x=long,y=lat,group=group))+
+  geom_polygon(aes(fill=Median))+
+  geom_path()+ 
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Heatmap of median ABV per State")+
+coord_map()
+```
+
+
+# Headmap of Median IBU by State
+
+* No craft beers with IBU ratings for South Dakota
+
+```{r merged-median-ibu-heatmap}
+
+df_merged_ibu_median.heatmap <- df_merged_ibu_median 
+
+# head(df_merged_ibu_median.heatmap)
+
+
+colnames(df_merged_ibu_median.heatmap)[1] = "State" #change "state.name" to "State"
+colnames(df_merged_ibu_median.heatmap)[2] = "Median" #change "n" to "Count"
+
+# df_abv_map_data1
+
+df_merged_ibu_median.heatmap$region <- tolower(df_merged_ibu_median.heatmap$State)
+df_merged_ibu_median.heatmap2 <- df_merged_ibu_median.heatmap[-1]
+states <- map_data("state")
+map.df <- merge(states, df_merged_ibu_median.heatmap2, by="region", all.x=T)
+map.df <- map.df[order(map.df$order),]
+ggplot(map.df, aes(x=long,y=lat,group=group))+
+  geom_polygon(aes(fill=Median))+
+  geom_path()+ 
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+ggtitle("Heatmap of median IBU per State")+
+coord_map()
+```
+
+
 # Conclusion
 
+We were able to ascertain that a beer's Alcohol by Volume (ABV) and International Bitterness Units (IBU) served as good predictors of beer styles for IPAs and other Ale types.  There was also evidence of regional references in a beer's bitterness.  Because of the relatively few craft beers bottled and distributed from the Northeast and South regions, we expect there to be greater market opportunities for the Budweiser family of beverages in states like Maine, Florida and West Virginia where the median bitterness of beers is somewhat higher than other areas.  
+
+We hope that from this observational study, we can proceed with more sophisticated experimental designs where causal conclusions can be drawn.  Additionally, we expect that expanding the factors of the study to include other points of interest while minimizing the missingness of the central bitterness parameter could be beneficial for any further analysis and predictive accuracy.
 
 
-
-The analysis outlined in this paper seeks to address several questions of interest from the US Craft Beers industry.  There were over 2,410 beers across 558 separate breweries identified in the study.  Although the commissioned study is limited in scope and provides only a small sample of the available attributes, we are confident that it highlights some of the more obvious trends and regional differences in beer tastes.  Two important factors in the flavor of any beer are the percentage of alcohol as well as the bitterness.  We will delve into the specifics of this relationship among beer styles and across different regions of the United States in an attempt to gain better insights into market opportunities.
 
