@@ -45,14 +45,14 @@ Chance Robinson
 library(tidyverse)
 ```
 
-    ## -- Attaching packages ------------------------------------------------------ tidyverse 1.2.1 --
+    ## -- Attaching packages -------------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --
 
     ## v ggplot2 3.2.0     v purrr   0.3.2
     ## v tibble  2.1.3     v dplyr   0.8.3
     ## v tidyr   0.8.3     v stringr 1.4.0
     ## v readr   1.3.1     v forcats 0.4.0
 
-    ## -- Conflicts --------------------------------------------------------- tidyverse_conflicts() --
+    ## -- Conflicts ----------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -453,11 +453,11 @@ na_style_count <- dim(df_na_style)[1]
 total_count <- dim(df_merged)[1]
 ```
 
-| Column Name | Count | % Missing  |
-| ----------- | ----- | ---------- |
-| 1\. ABV     | 62    | 2.5726141  |
-| 2\. IBU     | 1005  | 41.7012448 |
-| 3\. Style   | 5     | 0.2074689  |
+| Column Name | Count | % Missing |
+| ----------- | ----- | --------- |
+| 1\. ABV     | 62    | 2.57      |
+| 2\. IBU     | 1005  | 41.7      |
+| 3\. Style   | 5     | 0.21      |
 
 ## Barplot of median values
 
@@ -744,13 +744,13 @@ df_merged_abv_cleaned %>%
 
 ### Summary Statistics
 
-| ABV Summary Statistics | Value     |
-| ---------------------- | --------- |
-| 1\. Minimum            | 0.001     |
-| 2\. Maximum            | 0.128     |
-| 3\. Median             | 0.056     |
-| 4\. Mean               | 0.0597734 |
-| 5\. Standard Deviation | 0.0135417 |
+| ABV Summary Statistics | Value  |
+| ---------------------- | ------ |
+| 1\. Minimum            | 0.001  |
+| 2\. Maximum            | 0.128  |
+| 3\. Median             | 0.056  |
+| 4\. Mean               | 0.0598 |
+| 5\. Standard Deviation | 0.0135 |
 
 ``` r
 abv_min 

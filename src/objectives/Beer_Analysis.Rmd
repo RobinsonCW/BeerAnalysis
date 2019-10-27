@@ -506,7 +506,7 @@ df_merged_abv_cleaned %>%
 
 ## ABV Summary Statistics
 
-  ABV Summary Statistics|Value                 
+  ABV Summary Statistics |Value                 
   -----------------------|--------------------- 
   1.  Minimum            |    `r abv_min`	      
   2.  Maximum            |    `r abv_max`	      

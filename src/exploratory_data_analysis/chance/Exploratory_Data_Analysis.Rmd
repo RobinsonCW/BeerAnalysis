@@ -259,10 +259,9 @@ total_count <- dim(df_merged)[1]
 
   Column Name      |Count                 |% Missing
   -----------------|--------------------- |------------------------------------------------
-  1.  ABV          |    `r na_abv_count`	| `r na_abv_count / total_count * 100`
-  2.  IBU          |    `r na_ibu_count`	| `r na_ibu_count / total_count * 100`
-  3.  Style        |    `r na_style_count`| `r na_style_count / total_count * 100`
-
+  1.  ABV          |    `r na_abv_count`	| `r round((na_abv_count / total_count * 100),2)`
+  2.  IBU          |    `r na_ibu_count`	| `r round((na_ibu_count / total_count * 100),2)`
+  3.  Style        |    `r na_style_count`| `r round((na_style_count / total_count * 100),2)`
 
 ## Barplot of median values
 
@@ -472,14 +471,14 @@ df_merged_abv_cleaned %>%
 
 ### Summary Statistics
 
-  ABV Summary Statistics|Value                 
+  ABV Summary Statistics |Value                 
   -----------------------|--------------------- 
   1.  Minimum            |    `r abv_min`	      
   2.  Maximum            |    `r abv_max`	      
   3.  Median             |    `r abv_median`	 
-  4.  Mean               |    `r abv_mean`	     
-  5.  Standard Deviation |    `r abv_sd`	     
-
+  4.  Mean               |    `r round(abv_mean,4)`	     
+  5.  Standard Deviation |    `r round(abv_sd,4)`	     
+  
 
 ```{r merged-median-abv-summary}
 

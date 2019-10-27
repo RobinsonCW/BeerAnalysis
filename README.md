@@ -6,6 +6,10 @@ Created by [Chance Robinson](https://github.com/RobinsonCW) and [Thomas Karba](h
 
 Case study of US craft beers and breweries.
 
+## YouTube Video
+
+* [Beer Analysis (video)](https://youtu.be/GOU_48l1fCU): An video recording of the power point presentation.
+
 ## Analysis Files
 
 * [Beer Analysis Paper (html)](http://htmlpreview.github.io/?https://github.com/RobinsonCW/BeerAnalysis/blob/master/src/objectives/Beer_Analysis.html): A paper covering the analysis. 
